@@ -11,14 +11,15 @@ public:
     ~SpaceTrackClient();
 
     bool login();
-    bool fetch(const std::string& url, std::string& response);
+    bool fetch(const std::string& url, std::vector<uint8_t>& response);
 
 private:
     std::string username_;
     std::string password_;
     std::string cookieFile_;
 
-    static size_t writeCallback(void* contents, size_t size, size_t nmemb, void* userp);
+    static size_t writeCallback_str(void* contents, size_t size, size_t nmemb, void* userp);
+    static size_t writeCallback_vec(void* contents, size_t size, size_t nmemb, void* userp);
 };
 
 #endif // SPACETRACKCLIENT_H
