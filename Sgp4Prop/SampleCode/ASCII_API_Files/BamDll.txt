@@ -1,0 +1,165 @@
+  1. BamInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Bam dll for use in the program
+Syntax: 
+	int BamInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if the Bam dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. BamGetInfo
+Purpose:
+	 Returns information about the current version of Bam.dll. The information is placed in the string parameter you pass in
+Syntax: 
+	void BamGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Bam.dll
+=======================================================================================
+  3. BamCompNumTSs
+Purpose:
+	 Computes the number of time steps using the input start/end times and the step size
+Syntax: 
+	int BamCompNumTSs((in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSizeMin)
+Parameters: 
+	startDs50UTC: Start time in days since 1950, UTC
+	stopDs50UTC: Stop time in days since 1950, UTC
+	stepSizeMin: Step size in minutes
+Return Value:
+	number of time steps computed from the input time span and step size
+=======================================================================================
+  4. BamCompute
+Purpose:
+	 Computes and returns separate/missed distance data
+	 
+	 The table below shows the indexes for the Separation Distance values contained in the extBamArr array:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	     0time at mininum average separate distances (ds50UTC)
+	     1minimum average separate distance (km)
+	     2average position X at minimum average separate distance (km)
+	     3average position Y at minimum average separate distance (km)
+	     4average position Z at minimum average separate distance (km)
+	     5average velocity X at minimum average separate distance (km/s)
+	     6average velocity Y at minimum average separate distance (km/s)
+	     7average velocity Z at minimum average separate distance (km/s)
+	     8average latitude at minimum average separate distance (deg)
+	     9average longitude at minimum average separate distance (deg)
+	     10average height at minimum average separate distance (km)
+	 
+	 
+	 The table below shows the indexes for the Miss Distance values contained in the extBamArr array:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	     20time at mininum average missed distances (ds50UTC)
+	     21minimum average missed distance (km)
+	     22average position X of satellites when they cross the pinch point plan (km)
+	     23average position Y of satellites when they cross the pinch point plan (km)
+	     24average position Z of satellites when they cross the pinch point plan (km)
+	     25average velocity X of satellites when they cross the pinch point plan (km/s)
+	     26average velocity Y of satellites when they cross the pinch point plan (km/s)
+	     27average velocity Z of satellites when they cross the pinch point plan (km/s)
+	     28average latitude of satellites when they cross the pinch point plan (deg)
+	     29average longitude of satellites when they cross the pinch point plan (deg)
+	     30average height of satellites when they cross the pinch point plan (km)
+	 
+Syntax: 
+	void BamCompute((in-Long[*]) satKeys, (in-Integer) numSats, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSizeMin, (out-Double[*]) avgSDs, (out-Double[*]) avgMDs, (out-Double[64]) extBamArr, (out-Integer) errCode)
+Parameters: 
+	satKeys: Array of satellite keys that wil be used in BAM
+	numSats: The size of the satKeys array
+	startDs50UTC: Start time in days since 1950, UTC
+	stopDs50UTC: Stop time in days since 1950, UTC
+	stepSizeMin: Step size in minutes
+	avgSDs: Average separate distances of all time steps
+	avgMDs: Average missed distances of all time steps
+	extBamArr: Other BAM resulting data
+	errCode: 0 if Bam is successful, non-0 if there is an error
+=======================================================================================
+  5. BamGetResults
+Purpose:
+	 Retrieves other BAM data
+	 
+	 The table below shows the indexes for the values for the xf_bam parameter:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	     0times when satellites cross the pinch point plan (ds50UTC)
+	     1missed distances from satellites to the pinch point (km)
+	     2nadir angles of satellites when they cross the pinch point plan
+	     3position Xs of satellites when they cross the pinch point plan (km)
+	     4position Ys of satellites when they cross the pinch point plan (km)
+	     5position Zs of satellites when they cross the pinch point plan (km)
+	     6velocity Xs of satellites when they cross the pinch point plan (km/s)
+	     7velocity Ys of satellites when they cross the pinch point plan (km/s)
+	     8velocity Zs of satellites when they cross the pinch point plan (km/s)
+	     9latitude of satellites when they cross the pinch point plan (deg)
+	     10longitude of satellites when they cross the pinch point plan (deg)
+	     11height of satellites when they cross the pinch point plan (km)
+	 
+Syntax: 
+	void BamGetResults((in-Integer) xf_bam, (out-Double[*]) bamArr)
+Parameters: 
+	xf_bam: Predefined number specifying which BAM array to retrieve
+	bamArr: An array to store the retrieved result
+=======================================================================================
+  6. BamGetResultsFull
+Purpose:
+	 Retrieves other BAM data. Same as BamGetResults, but returns everything in one call
+	 
+	 The table below shows the indexes for the values for the xf_bam parameter:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	     0times when satellites cross the pinch point plan (ds50UTC)
+	     1missed distances from satellites to the pinch point (km)
+	     2nadir angles of satellites when they cross the pinch point plan
+	     3position Xs of satellites when they cross the pinch point plan (km)
+	     4position Ys of satellites when they cross the pinch point plan (km)
+	     5position Zs of satellites when they cross the pinch point plan (km)
+	     6velocity Xs of satellites when they cross the pinch point plan (km/s)
+	     7velocity Ys of satellites when they cross the pinch point plan (km/s)
+	     8velocity Zs of satellites when they cross the pinch point plan (km/s)
+	     9latitude of satellites when they cross the pinch point plan (deg)
+	     10longitude of satellites when they cross the pinch point plan (deg)
+	     11height of satellites when they cross the pinch point plan (km)
+	 
+Syntax: 
+	void BamGetResultsFull((out-Double[*, 12]) bamArr)
+Parameters: 
+	bamArr: An array to store the retrieved result
+=======================================================================================
+  7. BamComputeAll
+Purpose:
+Syntax: 
+	void BamComputeAll((in-Long[*]) satKeys, (in-Integer) numSats, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSizeMin, (out-Double[*]) avgSDs, (out-Double[*]) avgMDs, (out-Double[64]) extBamArr, (out-Double[*, 12]) bamArr, (out-Integer) errCode)
+Parameters: 
+	satKeys: Array of satellite keys that wil be used in BAM
+	numSats: The size of the satKeys array
+	startDs50UTC: Start time in days since 1950, UTC
+	stopDs50UTC: Stop time in days since 1950, UTC
+	stepSizeMin: Step size in minutes
+	avgSDs: Average separate distances of all time steps
+	avgMDs: Average missed distances of all time steps
+	extBamArr: Other BAM resulting data
+	bamArr: An array to store the retrieved result
+	errCode: 0 if Bam is successful, non-0 if there is an error
+=======================================================================================
+
+
+

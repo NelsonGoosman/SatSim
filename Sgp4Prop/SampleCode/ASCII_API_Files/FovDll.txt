@@ -1,0 +1,211 @@
+  1. FovInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Fov dll for use in the program
+Syntax: 
+	int FovInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if Fov.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. FovGetInfo
+Purpose:
+	 Returns information about the current version of Fov.dll. The information is placed in the string parameter you pass in
+Syntax: 
+	void FovGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Fov.dll.
+=======================================================================================
+  3. FovLoadFile
+Purpose:
+	 Loads Fov-related parameters (1P/2P/3P cards, and Fov parameter free format) from an input text file
+Syntax: 
+	int FovLoadFile((in-Character[512]) fovInputFile)
+Parameters: 
+	fovInputFile: The name of the file containing Fov-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. FovLoadFileAll
+Purpose:
+	 Loads Fov-related parameters (1P/2P/3P cards, and Fov parameter free format) from an input text file
+Syntax: 
+	int FovLoadFileAll((in-Character[512]) fovInputFile)
+Parameters: 
+	fovInputFile: The name of the file containing Fov-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  5. FovLoadCard
+Purpose:
+	 Loads a single Fov-typed card
+Syntax: 
+	int FovLoadCard((in-Character[512]) card)
+Parameters: 
+	card: Fov-type input card
+Return Value:
+	0 if the input card is read successfully, non-0 if there is an error
+=======================================================================================
+  6. FovSaveFile
+Purpose:
+	 Saves any currently loaded Fov-related settings to a file
+Syntax: 
+	int FovSaveFile((in-Character[512]) fovFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	fovFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  7. FovGetDataFrInputFiles
+Purpose:
+	 This function retrieves various FOV input data being entered from input flat files (various FOV cards)
+Syntax: 
+	void FovGetDataFrInputFiles((out-Double[8]) xa_fovCtrl, (out-Integer) numOfWindows, (out-Double[256]) startStopTimes, (out-Integer) numOfSources, (out-Double[128, 8]) xa_fovSrc_Arr, (out-Integer) numOfTargets, (out-Double[128, 8]) xa_fovTgt_Arr, (out-Integer) numVicSats, (out-Integer[128]) vicSatNums)
+Parameters: 
+	xa_fovCtrl: FOV control parameters (see XA_FOVCTRL_?)
+	numOfWindows: Number of specified start/stop windows
+	startStopTimes: Array of start/stop times in days since 1950 UTC (even idxs=start times, odd idxs=stop times)
+	numOfSources: Number of sources
+	xa_fovSrc_Arr: Array of source records (see XA_FOVSRC_?)
+	numOfTargets: Number of targets
+	xa_fovTgt_Arr: Array of target records (see XA_FOVTGT_?)
+	numVicSats: Number of specified potential victims
+	vicSatNums: Array of satellite numbers of the specified potential victims
+=======================================================================================
+  8. FovFindTargetPasses
+Purpose:
+	 This function screens the specified start/end time window and returns passes when the target satellite can be seen (passed all limit checks) by the source 
+	 Note: Since v9.7, this function allows source to be a space-based sensor as well
+Syntax: 
+	int FovFindTargetPasses((in-Double) startTimeDs50UTC, (in-Double) stopTimeDs50UTC, (in-Long) srcSenKey, (in-Long) tgtSatKey, (out-Double[*, 2]) tgtPassesArr, (out-Integer) numOfPasses)
+Parameters: 
+	startTimeDs50UTC: Window start time in days since 1950 UTC
+	stopTimeDs50UTC: Window stop time in days since 1950 UTC
+	srcSenKey: The source sensor key
+	tgtSatKey: The targeted satellite's unique key
+	tgtPassesArr: Array of entry/exit times (in Ds50TAI) of each pass; the size of the array should match the specified value in XA_FOVRUN_MAXPASSES
+	numOfPasses: Number of passes that target satellite can be seen (passed all limit checks) by the source sensor
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+  9. FovTargetElset
+Purpose:
+	 This function screens a potential victim satellite for penetrating the illumination cone between a source and a target (target is an elset).
+	 
+	 The xa_emeDat array size is [numObs, 3].  The penetration time indexes are:
+	 
+	 table
+	 
+	 Name
+	 Index
+	 Index Interpretation
+	 
+	  0 entry time (ds50TAI)
+	  1 minimum time (ds50TAI)
+	  2 exit time (ds50TAI)
+	 
+	 
+	 See FovGetDataFrInputFiles for a description of the XA_FOVSRC parameter values.
+Syntax: 
+	int FovTargetElset((in-Double[8]) xa_fovRun, (in-Double[8]) xa_fovSrc, (in-Long) tgtSatKey, (in-Long) vicSatKey, (out-Double[*, 3]) xa_emeDat, (out-Integer) numOfPasses)
+Parameters: 
+	xa_fovRun: Fov run parameters (see XA_FOVRUN_?)
+	xa_fovSrc: Source data (see XA_FOVSRC_?)
+	tgtSatKey: The targeted satellite's unique key
+	vicSatKey: The victim satellite's unique key
+	xa_emeDat: Array of entry/minimum/exit (in Ds50TAI) times of each pass
+	numOfPasses: Number of passes found
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 10. FovTargetElsetLook
+Purpose:
+	 This function returns a look angle from the source to the potential victim satellite at the specified time (target is an elset)
+	 
+Syntax: 
+	int FovTargetElsetLook((in-Double) currDs50TAI, (in-Double[8]) xa_fovSrc, (in-Long) vicSatKey, (out-Double[8]) xa_look)
+Parameters: 
+	currDs50TAI: Time, in ds50TAI, for which to compute the look angle
+	xa_fovSrc: Source data (see XA_FOVSRC_?)
+	vicSatKey: The victim satellite's unique key
+	xa_look: Look angle data (see XA_LOOK_?)
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 11. FovTargetElsetLookView
+Purpose:
+	 This function returns look and view data from the source to the potential victim satellite at the specified time (target is an elset)
+	 
+Syntax: 
+	int FovTargetElsetLookView((in-Double) currDs50TAI, (in-Double[8]) xa_fovSrc, (in-Long) vicSatKey, (out-Double[128]) xa_lv)
+Parameters: 
+	currDs50TAI: Time, in ds50TAI, for which to compute the look angle
+	xa_fovSrc: Source data (see XA_FOVSRC_?)
+	vicSatKey: The victim satellite's unique key
+	xa_lv: The array that stores resulting look and view data (see XA_LV_?)
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 12. FovTargetVec
+Purpose:
+	 This function screens a potential victim satellite for penetrating the illumination cone between a source and a target (target is a vector: AZ/EL or RA/DEC or ELSET #).
+	 See FovTargetElset for a description of the xa_emeDat array.
+	 If actual number of passes exceeds the set limit in XA_FOVRUN_MAXPASSES, an error is returned. However, the data in xa_emeDat is still valid 
+Syntax: 
+	int FovTargetVec((in-Double[8]) xa_fovRun, (in-Double[8]) xa_fovSrc, (in-Double[8]) xa_fovTgt, (in-Long) vicSatKey, (out-Double[*, 3]) xa_emeDat, (out-Integer) numOfPasses)
+Parameters: 
+	xa_fovRun: Fov run parameters (see XA_FOVRUN_?)
+	xa_fovSrc: Source data (see XA_FOVSRC_?)
+	xa_fovTgt: Target data (see XA_FOVTGT_?)
+	vicSatKey: The victim satellite's unique key
+	xa_emeDat: Array of entry/minimum/exit (in Ds50TAI) times of each pass
+	numOfPasses: Number of passes found
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 13. FovTargetVecLook
+Purpose:
+	 This function returns a look angle from the source to the potential victim satellite at the specified time (target is a vector: AZ/EL or RA/DEC or ELSET #).
+	 See FovGetDataFrInputFiles for a description of the XA_FOVSRC and XA_FOVTGT parameter values.
+	 See FovTargetElsetLook for a description of the XA_LOOK parameter values.
+Syntax: 
+	int FovTargetVecLook((in-Double) currDs50TAI, (in-Double[8]) xa_fovSrc, (in-Double[8]) xa_fovTgt, (in-Long) vicSatKey, (out-Double[8]) xa_look)
+Parameters: 
+	currDs50TAI: Time, in ds50TAI, for which to compute the look angle
+	xa_fovSrc: Source data (see XA_FOVSRC_?)
+	xa_fovTgt: Target data (see XA_FOVTGT_?)
+	vicSatKey: The victim satellite's unique key
+	xa_look: Look angle data (see XA_LOOK_?)
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 14. FovTargetVecLookView
+Purpose:
+	 This function returns look and view data from the source to the potential victim satellite at the specified time (target is a vector: AZ/EL or RA/DEC or ELSET #).
+	 See FovGetDataFrInputFiles for a description of the XA_FOVSRC and XA_FOVTGT parameter values.
+	 Note: The source's limit checks won't be executed therefore all limit flags are returned as PASSes
+Syntax: 
+	int FovTargetVecLookView((in-Double) currDs50TAI, (in-Double[8]) xa_fovSrc, (in-Double[8]) xa_fovTgt, (in-Long) vicSatKey, (out-Double[128]) xa_lv)
+Parameters: 
+	currDs50TAI: Time, in ds50TAI, for which to compute the look angle
+	xa_fovSrc: Source data (see XA_FOVSRC_?)
+	xa_fovTgt: Target data (see XA_FOVTGT_?)
+	vicSatKey: The victim satellite's unique key
+	xa_lv: The array that stores resulting look and view data (see XA_LV_?)
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 15. FovReset
+Purpose:
+	 Resets all FOV control parameters back to their default values
+Syntax: 
+	void FovReset()
+Parameters: 
+	None
+=======================================================================================
+
+
+

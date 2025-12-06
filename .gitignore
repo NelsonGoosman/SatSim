@@ -1,5 +1,11 @@
 .vscode
-helper/helper
-*.exe
-*.o
-cookies.txt
+
+build/
+
+Sgp4Prop/Documentation/
+Sgp4Prop/UnitTests/
+Sgp4Prop/Verify/
+Sgp4Prop/directorytree.txt
+Sgp4Prop/directory.txt
+Sgp4Prop/Utilities
+Sgp4Prop/README.txt

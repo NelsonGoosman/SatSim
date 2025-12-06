@@ -1,25 +1,30 @@
-#include "src/data/spaceTrackClient.h"
+#include "src/dataLoader/dataLoader.h"
+#include "src/physics/init_sgp4.h"
+#include "src/utils/loadDLLs.h"
 #include <iostream>
-#include <memory>
 
+void init_app();
+void cleanup();
 int main() {
-    SpaceTrackClient client("nelsongoosman@gmail.com", "!NjpZGV3S23hjqa");
 
-    if (!client.login()) {
-        std::cerr << "Login failed\n";
-        return 1;
-    }
+    init_app();
 
-    std::vector<uint8_t> response;
-     // Example URL to fetch TLE data
-     // Adjust the URL as needed for your specific query
-     // This URL is just an example and may not work as-is
-    const std::string url = "https://www.space-track.org/basicspacedata/query/class/gp/EPOCH/%3Enow-30/MEAN_MOTION/%3E11.25/ECCENTRICITY/%3C0.25/OBJECT_TYPE/payload/orderby/NORAD_CAT_ID,EPOCH/format/3le";
-    if (client.fetch(url, response)) {
-        std::cout << "Fetched Data\n";
-    } else {
-        std::cerr << "Fetch failed\n";
-    }    
+    DataLoader::CelesTrackRequest requestparams = {"CATNR", "25544", "json", SatelliteClassification::UNKNOWN};
+    DataLoader::CelesTrackDataLoader loader(requestparams);
+    auto result = loader.fetch_data(); 
+    init_sgp4(result);
 
+    cleanup();
     return 0;
+}
+
+void init_app(){
+    utils::LoadAstroStdDlls();
+}
+
+void cleanup(){
+    TleRemoveAllSats();   
+    Sgp4RemoveAllSats();
+    utils::FreeAstroStdDlls();
+ 
 }

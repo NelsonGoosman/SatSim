@@ -1,0 +1,39 @@
+C++ Orbital Simulation Architecture (ASCII Diagram)+----------------------------------------------------------------------+
+| 1. DATA INGESTION (src/data)                                         |
++----------------------------------------------------------------------+
+|                                                                      |
+|  [SpaceTrackAPI.cpp] --(HTTP/TLEs)--> [TLEParser.cpp]                 |
+|  (Fetch Data)                           (Parse to structs)           |
+|         |                                      |                     |
+|         +-----------> [Satellite.h] <----------+                     |
+|                       (Data Model)                                   |
+|                                                                      |
++-----------------------------+----------------------------------------+
+                              |
+                              v (Propagated State Vectors)
++-----------------------------+----------------------------------------+
+| 2. SIMULATION CORE (src/core & src/physics)                          |
++----------------------------------------------------------------------+
+|                                                                      |
+|  [TimeManager.h] --(Time Step)--> [Propagator.cpp]                    |
+|  (Clock/Scaling)                     (SGP4 Algorithm)                |
+|         ^                               |                            |
+|         |                               v                            |
+|  [Config.h] --------> [Simulation.cpp] <----> [CollisionSystem.cpp]  |
+|  (Constants)             (Main Loop/Sync)    (Dynamic Octree)        |
+|                                                                      |
++-----------------------------+----------------------------------------+
+                              |
+                              v (Renderable Positions/VBOs)
++-----------------------------+----------------------------------------+
+| 3. PRESENTATION (src/graphics)                                       |
++----------------------------------------------------------------------+
+|                                                                      |
+|  [Renderer.cpp] <------> [EarthModel.cpp]                            |
+|  (Instanced Draw)        (Textures/Atmosphere)                       |
+|         ^                        ^                                   |
+|         |                        |                                   |
+|  [Camera.cpp] <------> [GUI.cpp] <----(Warnings)---------------------+
+|  (View Controls)     (ImGui Overlay)                                 |
+|                                                                      |
++----------------------------------------------------------------------+

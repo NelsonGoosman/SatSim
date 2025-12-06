@@ -1,0 +1,882 @@
+  1. TleInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0.    
+	 Initializes Tle DLL for use in the program.
+	 If this function returns an error, it is recommended that you stop the program immediately.
+	 
+	 An error will occur if you forget to load and initialize all the prerequisite DLLs, as listed in the DLL Prerequisites section of the accompanying documentation, before using this DLL.
+Syntax: 
+	int TleInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit. See the documentation for DllMain.dll for details.
+Return Value:
+	0 if Tle.dll is initialized successfully, non-0 if there is an error.
+=======================================================================================
+  2. TleGetInfo
+Purpose:
+	 Returns the information about the Tle DLL.
+	 The returned string provides information about the version number, build date, and the platform of the Tle DLL. 
+Syntax: 
+	void TleGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about the Tle DLL.
+=======================================================================================
+  3. TleLoadFile
+Purpose:
+	 Loads TLEs (satellites) contained in a text file into the TLE DLL's binary tree.
+	 You may use this function repeatedly to load TLEs from different input files. However, only unique satKeys are loaded. Duplicated TLEs won't be stored. 
+	 
+	 TLEs can be included directly in the specified file, or they can be read from a separate file identified with "ELTFIL=[path\filename]" or "VECFIL=[path\filename]".
+	 
+	 The input file is read in two passes. The function first looks for "ELTFIL=" and "VECFIL=" lines, then it looks for TLEs which were included directly. The result of this is that data entered using both methods will be processed, but the "ELTFIL=" and "VECFIL=" data will be processed first.
+Syntax: 
+	int TleLoadFile((in-Character[512]) tleFile)
+Parameters: 
+	tleFile: The name of the file containing two line element sets to be loaded.
+Return Value:
+	0 if the two line element sets in the file are successfully loaded, non-0 if there is an error.
+=======================================================================================
+  4. TleSaveFile
+Purpose:
+	 Saves currently loaded TLEs to a file. 
+	 In append mode, if the specified file does not exist it will be created.
+	 If you call this routine immediately after TleLoadFile(), the TLE contents in the two files should be the same (minus duplicated TLE's or bad TLE's).
+	 
+	 The purpose of this function is to save the current state of the loaded TLE's, usually used in GUI applications, for future use.
+Syntax: 
+	int TleSaveFile((in-Character[512]) tleFile, (in-Integer) saveMode, (in-Integer) xf_tleForm)
+Parameters: 
+	tleFile: The name of the file in which to save the TLE's.
+	saveMode: Specifies whether to create a new file or append to an existing file. (0 = create new file, 1= append to existing file)
+	xf_tleForm: Specifies the format in which to save the file. (0 = two-line element set format, 1 =  CSV, others = future implementation)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error.
+=======================================================================================
+  5. TleRemoveSat
+Purpose:
+	 Removes a TLE represented by the satKey from memory. 
+	 If the users enter an invalid satKey (a non-existing satKey), the function will return a non-zero value indicating an error.
+Syntax: 
+	int TleRemoveSat((in-Long) satKey)
+Parameters: 
+	satKey: The unique key of the satellite to be removed.
+Return Value:
+	0 if the TLE is removed successfully, non-0 if there is an error.
+=======================================================================================
+  6. TleRemoveAllSats
+Purpose:
+	 Removes all the TLEs from memory.
+Syntax: 
+	int TleRemoveAllSats()
+Parameters: 
+	None
+Return Value:
+	0 if all TLE's are removed successfully from memory, non-0 if there is an error.
+=======================================================================================
+  7. TleGetCount
+Purpose:
+	 Returns the number of TLEs currently loaded. 
+	 See TleGetLoaded for an example.
+	 This function is useful for dynamically allocating memory for the array that is passed to the function TleGetLoaded().
+Syntax: 
+	int TleGetCount()
+Parameters: 
+	None
+Return Value:
+	The number of TLEs currently loaded.
+=======================================================================================
+  8. TleGetLoaded
+Purpose:
+	 Retrieves all of the currently loaded satKeys. These satKeys can be used to access the internal data for the TLE's.
+	 It is recommended that TleGetCount() be  used to determine how many satellites are currently loaded. This value can then be used to dynamically allocate an array to hold the satKeys.
+	 
+	 If you are going to pass a statically allocated array to this function, ensure it is large enough to hold all of the returned satKeys.
+Syntax: 
+	void TleGetLoaded((in-Integer) order, (out-Long[*]) satKeys)
+Parameters: 
+	order: Specifies the order in which the satKeys should be returned. 0 = sort in ascending order of satKeys, 1 = sort in descending order of satKeys, 2 = sort in the order in which the satKeys were loaded in memory, 9 = Quickest: sort in the order in which the satKeys were stored in the tree
+	satKeys: The array in which to store the satKeys.
+=======================================================================================
+  9. TleAddSatFrLines
+Purpose:
+	 Adds a TLE (satellite), using its directly specified first and second lines. 
+	 The function will indicate an error if the specified two line element set corresponds to a satellite that is already in memory.
+	 
+	 This function can be called repeatedly to add many TLEs, one at a time.
+Syntax: 
+	__int64 TleAddSatFrLines((in-Character[512]) line1, (in-Character[512]) line2)
+Parameters: 
+	line1: The first line of a two line element set (or CSV Tle).
+	line2: The second line of a two line element set
+Return Value:
+	The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 10. TleAddSatFrLinesML
+Purpose:
+	 This function is similar to TleAddSatFrLines but designed to be used in Matlab.
+	 Matlab doesn't correctly return the 19-digit satellite key using TleAddSatFrLines. This method is an alternative way to return the satKey output.
+Syntax: 
+	void TleAddSatFrLinesML((in-Character[512]) line1, (in-Character[512]) line2, (out-Long) satKey)
+Parameters: 
+	line1: The first line of a two line element set (or CSV Tle).
+	line2: The second line of a two line element set
+	satKey: The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 11. TleAddSatFrCsv
+Purpose:
+	 Adds a TLE (satellite), using its CSV string format. 
+Syntax: 
+	__int64 TleAddSatFrCsv((in-Character[512]) csvLine)
+Parameters: 
+	csvLine: Input CSV TLE string
+Return Value:
+	The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 12. TleAddSatFrCsvML
+Purpose:
+	 This function is similar to TleAddSatFrCsv but designed to be used in Matlab.
+Syntax: 
+	void TleAddSatFrCsvML((in-Character[512]) csvLine, (out-Long) satKey)
+Parameters: 
+	csvLine: Input CSV TLE string
+	satKey: The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 13. TleAddSatFrFieldsGP
+Purpose:
+	 Adds a GP TLE using its individually provided field values. 
+	 The function will indicate an error if the specified two line element set corresponds to a satellite that is already in memory.
+	 
+	 This function can be called repeatedly to add many satellites (one satellite at a time).
+	 
+	 SGP satellites (ephType = 0) use Kozai mean motion. SGP4 satellites (ephType = 2) use Brouwer mean motion.
+Syntax: 
+	__int64 TleAddSatFrFieldsGP((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) bstar, (in-Integer) ephType, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+Return Value:
+	The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 14. TleAddSatFrFieldsGP2
+Purpose:
+	 This function is similar to TleAddSatFrFieldsGP but includes nDotO2 and n2DotO6. 
+	 nDotO2 and n2DotO6 values are not used in the SGP4 propagator. However, some users still want to preserve the integrity of all input data.
+Syntax: 
+	__int64 TleAddSatFrFieldsGP2((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) bstar, (in-Integer) ephType, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum, (in-Double) nDotO2, (in-Double) n2DotO6)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+	nDotO2: Mean motion derivative (rev/day**2 /2)
+	n2DotO6: Mean motion second derivative (rev/day**3 /6) or agom (ephType = 4, XP) (m2/kg)
+Return Value:
+	The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 15. TleAddSatFrFieldsGP2ML
+Purpose:
+	 This function is similar to TleAddSatFrFieldsGP2 but designed to be used in Matlab. 
+	 Matlab doesn't seem to correctly return the 19-digit satellite key using TleAddSatFrFieldsGP2. This method is an alternative way to return the satKey output.
+Syntax: 
+	void TleAddSatFrFieldsGP2ML((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) bstar, (in-Integer) ephType, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum, (in-Double) nDotO2, (in-Double) n2DotO6, (out-Long) satKey)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+	nDotO2: Mean motion derivative (rev/day**2 /2)
+	n2DotO6: Mean motion second derivative (rev/day**3 /6) or agom (ephType = 4, XP) (m2/kg)
+	satKey: The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 16. TleUpdateSatFrFieldsGP
+Purpose:
+	 Updates a GP satellite's data in memory by providing its individual field values. Note: satNum, year, day, and ephtype can't be updated.
+	 The satellite's unique key will not be changed by this function. If you specify a satKey that does not correspond to a currently loaded satellite, the function will indicate an error.
+	 
+	 Remember to use the correct mean motion depending on the satellite's ephType.
+Syntax: 
+	int TleUpdateSatFrFieldsGP((in-Long) satKey, (in-Character) secClass, (in-Character[8]) satName, (in-Double) bstar, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	secClass: Security classification
+	satName: Satellite international designator
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion  (rev/day) (ephType = 0: Kozai mean motion, ephType = 2: Brouwer mean motion)
+	revNum: Revolution number at epoch
+Return Value:
+	0 if the TLE is successfully updated, non-0 if there is an error.
+=======================================================================================
+ 17. TleUpdateSatFrFieldsGP2
+Purpose:
+	 This function is similar to TleUpdateSatFrFieldsGP but includes nDotO2 and n2DotO6. Note: satNum, year, day, and ephtype can't be updated.
+	 nDotO2 and n2DotO6 values are not used in the SGP4 propagator. However, some users still want to preserve the integrity of all input data.
+Syntax: 
+	int TleUpdateSatFrFieldsGP2((in-Long) satKey, (in-Character) secClass, (in-Character[8]) satName, (in-Double) bstar, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum, (in-Double) nDotO2, (in-Double) n2DotO6)
+Parameters: 
+	satKey: The satellite's unique key
+	secClass: Security classification
+	satName: Satellite international designator
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion  (rev/day) (ephType = 0: Kozai mean motion, ephType = 2: Brouwer mean motion)
+	revNum: Revolution number at epoch
+	nDotO2: Mean motion derivative (rev/day**2 /2)
+	n2DotO6: Mean motion second derivative (rev/day**3 /6) or agom (ephType = 4, XP) (m2/kg)
+Return Value:
+	0 if the TLE is successfully updated, non-0 if there is an error.
+=======================================================================================
+ 18. TleAddSatFrFieldsSP
+Purpose:
+	 Adds an SP satellite using the individually provided field values.
+	 Only applies to SP propagator.
+Syntax: 
+	__int64 TleAddSatFrFieldsSP((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) bTerm, (in-Double) ogParm, (in-Double) agom, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bTerm: Ballistic coefficient (m^2/kg)
+	ogParm: Outgassing parameter/Thrust Acceleration (km/s^2)
+	agom: Agom (m^2/kg)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day)
+	revNum: Revolution number at epoch
+Return Value:
+	The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 19. TleAddSatFrFieldsSPML
+Purpose:
+	 This function is similar to TleAddSatFrFieldsSP but designed to be used in Matlab.
+	 Only applies to SP propagator.
+	 Matlab doesn't correctly return the 19-digit satellite key using TleAddSatFrFieldsSP. This method is an alternative way to return the satKey output.
+Syntax: 
+	void TleAddSatFrFieldsSPML((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) bTerm, (in-Double) ogParm, (in-Double) agom, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum, (out-Long) satKey)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bTerm: Ballistic coefficient (m^2/kg)
+	ogParm: Outgassing parameter/Thrust Acceleration (km/s^2)
+	agom: Agom (m^2/kg)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day)
+	revNum: Revolution number at epoch
+	satKey: The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 20. TleUpdateSatFrFieldsSP
+Purpose:
+	 Updates an SP satellite's data in memory using its individually provided field values. Note: satNum, year, day, and ephtype can't be updated.
+	 Only applies to SP propagator.
+	 The satellite's unique key will not be changed by this function. If you specify a satKey that does not correspond to a currently loaded TLE, the function will indicate an error. 
+Syntax: 
+	int TleUpdateSatFrFieldsSP((in-Long) satKey, (in-Character) secClass, (in-Character[8]) satName, (in-Double) bterm, (in-Double) ogParm, (in-Double) agom, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	secClass: Security classification
+	satName: Satellite international designator
+	bterm: Ballistic coefficient (m^2/kg)
+	ogParm: Outgassing parameter/Thrust Acceleration (km/s^2)
+	agom: Agom (m^2/kg)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day)
+	revNum: Revolution number at epoch
+Return Value:
+	0 if the TLE is successfully updated, non-0 if there is an error.
+=======================================================================================
+ 21. TleSetField
+Purpose:
+	 Updates the value of a field of a TLE. This function can be used for both GP and SP satellites.
+	 
+	 The table below indicates which index values correspond to which fields. Make sure to use the appropriate field index for GP TLEs and SP TLEs.  For indexes 5, 15 and 16, the interpretation depends on the ephemeris type of the TLE.
+	 satNum (1), Epoch (4), and Ephemeris Type (5) cannot be altered.
+	 
+	 table
+	 
+	 	index
+	 	index Interpretation
+	 
+	 1Satellite number
+	 2Security classification
+	 3Satellite international designator
+	 4Epoch
+	 5Ephemeris type = 0,2: B* drag term (1/er) Ephemeris type = 6   : SP radiation pressure
+	 coefficient agom (m2/kg)
+	 6Ephemeris type
+	 7Element set number
+	 8Orbit inclination (degrees)
+	 9Right ascension of ascending node (degrees)
+	 10Eccentricity
+	 11Argument of perigee (degrees)
+	 12Mean anomaly (degrees)
+	 13Mean motion (rev/day)
+	 14Revolution number at epoch
+	 15Ephemeris type = 0: SGP mean motion derivative (rev/day /2) or Ephemeris type = 6: SP
+	 ballistic coefficient (m2/kg)
+	 16Ephemeris type = 0: SGP mean motion second derivative (rev/day**2 /6) or Ephemeris type = 6:
+	 SP Outgassing parameter/Thrust Acceleration (km/s2)
+	 
+Syntax: 
+	int TleSetField((in-Long) satKey, (in-Integer) xf_Tle, (in-Character[512]) valueStr)
+Parameters: 
+	satKey: The satellite's unique key.
+	xf_Tle: Predefined number specifying which field to set. See remarks.
+	valueStr: The new value of the specified field, expressed as a string.
+Return Value:
+	0 if the TLE is successfully updated, non-0 if there is an error
+=======================================================================================
+ 22. TleGetField
+Purpose:
+	 Retrieves the value of a specific field of a TLE. 
+	 
+	 The table below indicates which index values correspond to which fields. Make sure to use the appropriate field index for GP TLEs and SP TLEs.  For indexes 5, 15 and 16, the interpretation depends on the ephemeris type of the TLE.
+	 
+	 table
+	 
+	 	index
+	 	index Interpretation
+	 
+	 1Satellite number
+	 2Security classification
+	 3Satellite international designator
+	 4Epoch
+	 5Ephemeris type = 0,2: B* drag term (1/er) Ephemeris type = 6   : SP radiation pressure
+	 coefficient agom (m2/kg)
+	 6Ephemeris type
+	 7Element set number
+	 8Orbit inclination (degrees)
+	 9Right ascension of ascending node (degrees)
+	 10Eccentricity
+	 11Argument of perigee (degrees)
+	 12Mean anomaly (degrees)
+	 13Mean motion (rev/day)
+	 14Revolution number at epoch
+	 15Ephemeris type = 0: SGP mean motion derivative (rev/day /2) or Ephemeris type = 6: SP
+	 ballistic coefficient (m2/kg)
+	 16Ephemeris type = 0: SGP mean motion second derivative (rev/day**2 /6) or Ephemeris type = 6:
+	 SP Outgassing parameter/Thrust Acceleration (km/s2)
+	 
+Syntax: 
+	int TleGetField((in-Long) satKey, (in-Integer) xf_Tle, (out-Character[512]) valueStr)
+Parameters: 
+	satKey: The satellite's unique key.
+	xf_Tle: Predefined number specifying which field to retrieve. See remarks.
+	valueStr: A string to contain the value of the requested field.
+Return Value:
+	0 if the TLE data is successfully retrieved, non-0 if there is an error.
+=======================================================================================
+ 23. TleGetAllFieldsGP
+Purpose:
+	 Retrieves all of the data for a GP satellite in a single function call. 
+	 This function only works for GP satellites. The field values are placed in the corresponding parameters of the function. 
+Syntax: 
+	int TleGetAllFieldsGP((in-Long) satKey, (out-Integer) satNum, (out-Character) secClass, (out-Character[8]) satName, (out-Integer) epochYr, (out-Double) epochDays, (out-Double) bstar, (out-Integer) ephType, (out-Integer) elsetNum, (out-Double) incli, (out-Double) node, (out-Double) eccen, (out-Double) omega, (out-Double) mnAnomaly, (out-Double) mnMotion, (out-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4, 6: SP)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (deg)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+Return Value:
+	0 if all values are retrieved successfully, non-0 if there is an error.
+=======================================================================================
+ 24. TleGetAllFieldsGP2
+Purpose:
+	 Retrieves all of the data (including nDotO2 and n2DotO6) for a GP satellite in a single function call. 
+	 This function is similar to TleGetAllFieldsGP but also includes nDotO2 and n2DotO6. 
+	 This function only works for GP satellites. The field values are placed in the corresponding parameters of the function. 
+Syntax: 
+	int TleGetAllFieldsGP2((in-Long) satKey, (out-Integer) satNum, (out-Character) secClass, (out-Character[8]) satName, (out-Integer) epochYr, (out-Double) epochDays, (out-Double) bstar, (out-Integer) ephType, (out-Integer) elsetNum, (out-Double) incli, (out-Double) node, (out-Double) eccen, (out-Double) omega, (out-Double) mnAnomaly, (out-Double) mnMotion, (out-Integer) revNum, (out-Double) nDotO2, (out-Double) n2DotO6)
+Parameters: 
+	satKey: The satellite's unique key
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4, 6: SP)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+	nDotO2: Mean motion derivative (rev/day**2 /2)
+	n2DotO6: Mean motion second derivative (rev/day**3 /6) or agom (ephType = 4, XP) (m2/kg)
+Return Value:
+	0 if all values are retrieved successfully, non-0 if there is an error.
+=======================================================================================
+ 25. TleGetAllFieldsSP
+Purpose:
+	 Retrieves all of the data for an SP satellite in a single function call.
+	 Only applies to SP propagator.
+	 This function only works for SP satellites. The field values are placed in the corresponding parameters of the function. 
+Syntax: 
+	int TleGetAllFieldsSP((in-Long) satKey, (out-Integer) satNum, (out-Character) secClass, (out-Character[8]) satName, (out-Integer) epochYr, (out-Double) epochDays, (out-Double) bTerm, (out-Double) ogParm, (out-Double) agom, (out-Integer) elsetNum, (out-Double) incli, (out-Double) node, (out-Double) eccen, (out-Double) omega, (out-Double) mnAnomaly, (out-Double) mnMotion, (out-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bTerm: Ballistic coefficient (m^2/kg)
+	ogParm: Outgassing parameter/Thrust Acceleration (km/s^2)
+	agom: Agom (m^2/kg)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day)
+	revNum: Revolution number at epoch
+Return Value:
+	0 if all values are retrieved successfully, non-0 if there is an error.
+=======================================================================================
+ 26. TleParseGP
+Purpose:
+	 Parses GP data from the input first and second lines of a two line element set or a CSV Tle.
+	 This function only parses data from the input TLE but DOES NOT load/add the input TLE to memory.
+Syntax: 
+	int TleParseGP((in-Character[512]) line1, (in-Character[512]) line2, (out-Integer) satNum, (out-Character) secClass, (out-Character[8]) satName, (out-Integer) epochYr, (out-Double) epochDays, (out-Double) nDotO2, (out-Double) n2DotO6, (out-Double) bstar, (out-Integer) ephType, (out-Integer) elsetNum, (out-Double) incli, (out-Double) node, (out-Double) eccen, (out-Double) omega, (out-Double) mnAnomaly, (out-Double) mnMotion, (out-Integer) revNum)
+Parameters: 
+	line1: The first line of the two line element set or a CSV tle
+	line2: The second line of the two line element set or an empty string for a CVS tle
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	nDotO2: N-dot/2 (for SGP, ephType = 0)
+	n2DotO6: N-double-dot/6 (for SGP, ephType = 0) or agom (ephType = 4, XP) (m2/kg)
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4, 6: SP)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+Return Value:
+	0 if the TLE is parsed successfully, non-0 if there is an error.
+=======================================================================================
+ 27. TleLinesToArray
+Purpose:
+	 Parses GP data from the input first and second lines of a two line element set or a CSV tle and store that data back into the output parameters.
+	 This function only parses data from the input TLE but DOES NOT load/add the input TLE to memory.
+Syntax: 
+	int TleLinesToArray((in-Character[512]) line1, (in-Character[512]) line2, (out-Double[64]) xa_tle, (out-Character[512]) xs_tle)
+Parameters: 
+	line1: The first line of the two line element set or a CSV tle
+	line2: The second line of the two line element set or an empty string for a CVS tle
+	xa_tle: Array containing TLE's numerical fields (see XA_TLE_?)
+	xs_tle: Output string that contains all TLE's text fields (see XS_TLE_?)
+Return Value:
+	0 if the TLE is parsed successfully, non-0 if there is an error.
+=======================================================================================
+ 28. TleParseSP
+Purpose:
+	 Parses SP data from the input first and second lines of a two line element set.
+	 Only applies to SP propagator.
+	 This function only parses data from the input TLE but DOES NOT load/add the input TLE to memory.
+Syntax: 
+	int TleParseSP((in-Character[512]) line1, (in-Character[512]) line2, (out-Integer) satNum, (out-Character) secClass, (out-Character[8]) satName, (out-Integer) epochYr, (out-Double) epochDays, (out-Double) bTerm, (out-Double) ogParm, (out-Double) agom, (out-Integer) elsetNum, (out-Double) incli, (out-Double) node, (out-Double) eccen, (out-Double) omega, (out-Double) mnAnomaly, (out-Double) mnMotion, (out-Integer) revNum)
+Parameters: 
+	line1: The first line of the two line element set
+	line2: The second line of the two line element set
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bTerm: Ballistic coefficient (m^2/kg)
+	ogParm: Outgassing parameter/Thrust Acceleration (km/s^2)
+	agom: Agom (m^2/kg)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day)
+	revNum: Revolution number at epoch
+Return Value:
+	0 if the TLE is parsed successfully, non-0 if there is an error.
+=======================================================================================
+ 29. TleGetLines
+Purpose:
+	 Returns the first and second lines representation of a TLE of a satellite. 
+Syntax: 
+	int TleGetLines((in-Long) satKey, (out-Character[512]) line1, (out-Character[512]) line2)
+Parameters: 
+	satKey: The satellite's unique key.
+	line1: A string to hold the first line of the TLE
+	line2: A string to hold the second line of the TLE
+Return Value:
+	0 if successful, non-0 on error.
+=======================================================================================
+ 30. TleGetCsv
+Purpose:
+	 Returns the CSV string representation of a TLE of a satellite. 
+Syntax: 
+	int TleGetCsv((in-Long) satKey, (out-Character[512]) csvLine)
+Parameters: 
+	satKey: The satellite's unique key.
+	csvLine: A string to hold the TLE in csv format.
+Return Value:
+	0 if successful, non-0 on error.
+=======================================================================================
+ 31. TleGPFieldsToLines
+Purpose:
+	 Constructs a TLE from individually provided GP data fields.
+	 This function only parses data from the input fields but DOES NOT load/add the TLE to memory.
+	 Returned line1 and line2 will be empty if the function fails to construct the lines as requested.
+Syntax: 
+	void TleGPFieldsToLines((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) nDotO2, (in-Double) n2DotO6, (in-Double) bstar, (in-Integer) ephType, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum, (out-Character[512]) line1, (out-Character[512]) line2)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	nDotO2: N Dot/2 (rev/day**2 /2)
+	n2DotO6: N Double Dot/6 (rev/day**3 /6) or agom (ephType = 4, XP) (m2/kg)
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+	line1: Returned first line of a TLE.
+	line2: Returned second line of a TLE.
+=======================================================================================
+ 32. TleGPFieldsToCsv
+Purpose:
+	 Constructs a TLE from individually provided GP data fields.
+	 This function only parses data from the input fields but DOES NOT load/add the TLE to memory.
+	 Returned line1 and line2 will be empty if the function fails to construct the lines as requested.
+Syntax: 
+	void TleGPFieldsToCsv((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) nDotO2, (in-Double) n2DotO6, (in-Double) bstar, (in-Integer) ephType, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum, (out-Character[512]) csvLine)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	nDotO2: N Dot/2 (rev/day**2 /2)
+	n2DotO6: N Double Dot/6 (rev/day**3 /6) or agom (ephType = 4, XP) (m2/kg)
+	bstar: B* drag term (1/er) (ephType = 0, 2) or BTerm - ballistic coefficient (m2/kg) (ephType = 4, XP)
+	ephType: Satellite ephemeris type (0: SGP, 2: SGP4)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day) (ephType = 0: Kozai mean motion, ephType = 2 or 4: Brouwer mean motion)
+	revNum: Revolution number at epoch
+	csvLine: A string to hold the TLE in csv format.
+=======================================================================================
+ 33. TleGPArrayToLines
+Purpose:
+	 Constructs a TLE from GP data stored in the input parameters.
+	 This function only parses data from the input data but DOES NOT load/add the TLE to memory.
+	 
+	 Returned line1 and line2 will be empty if the function fails to construct the lines as requested.
+Syntax: 
+	void TleGPArrayToLines((in-Double[64]) xa_tle, (in-Character[512]) xs_tle, (out-Character[512]) line1, (out-Character[512]) line2)
+Parameters: 
+	xa_tle: Array containing TLE's numerical fields (see XA_TLE_?)
+	xs_tle: Input string that contains all TLE's text fields (see XS_TLE_?)
+	line1: Returned first line of a TLE
+	line2: Returned second line of a TLE
+=======================================================================================
+ 34. TleGPArrayToCsv
+Purpose:
+	 Constructs a TLE from GP data stored in the input parameters.
+	 This function only parses data from the input data but DOES NOT load/add the TLE to memory.
+	 Returned line1 and line2 will be empty if the function fails to construct the lines as requested.
+Syntax: 
+	void TleGPArrayToCsv((in-Double[64]) xa_tle, (in-Character[512]) xs_tle, (out-Character[512]) csvline)
+Parameters: 
+	xa_tle: Array containing TLE's numerical fields (see XA_TLE_?)
+	xs_tle: Input string that contains all TLE's text fields (see XS_TLE_?)
+	csvline: Returned csv format elements.
+=======================================================================================
+ 35. TleSPFieldsToLines
+Purpose:
+	 Constructs a TLE from individually provided SP data fields.
+	 Only applies to SP propagator.
+	 This function only parses data from the input fields but DOES NOT load/add the TLE to memory.
+	 Returned line1 and line2 will be empty if the function fails to construct the lines as requested.
+Syntax: 
+	void TleSPFieldsToLines((in-Integer) satNum, (in-Character) secClass, (in-Character[8]) satName, (in-Integer) epochYr, (in-Double) epochDays, (in-Double) bTerm, (in-Double) ogParm, (in-Double) agom, (in-Integer) elsetNum, (in-Double) incli, (in-Double) node, (in-Double) eccen, (in-Double) omega, (in-Double) mnAnomaly, (in-Double) mnMotion, (in-Integer) revNum, (out-Character[512]) line1, (out-Character[512]) line2)
+Parameters: 
+	satNum: Satellite number
+	secClass: Security classification
+	satName: Satellite international designator
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	bTerm: Ballistic coefficient (m^2/kg)
+	ogParm: Outgassing parameter/Thrust Acceleration (km/s^2)
+	agom: Agom (m^2/kg)
+	elsetNum: Element set number
+	incli: Orbit inclination (degrees)
+	node: Right ascension of ascending node (degrees)
+	eccen: Eccentricity
+	omega: Argument of perigee (degrees)
+	mnAnomaly: Mean anomaly (degrees)
+	mnMotion: Mean motion (rev/day)
+	revNum: Revolution number at epoch
+	line1: Returned first line of a TLE.
+	line2: Returned second line of a TLE.
+=======================================================================================
+ 36. TleGetSatKey
+Purpose:
+	 Returns the first satKey from the currently loaded set of TLEs that contains the specified satellite number.
+	 This function is useful when Tle.dll is used in applications that require only one record (one TLE entry) for one satellite, and which refer to that TLE by its satellite number. This function can be used to retrieve a satKey in that situation, which is useful since the Standardized Astrodynamic Algorithms library works only with satKeys.
+	 A negative value will be returned if there is an error.
+Syntax: 
+	__int64 TleGetSatKey((in-Integer) satNum)
+Parameters: 
+	satNum: Satellite number
+Return Value:
+	The satellite's unique key
+=======================================================================================
+ 37. TleGetSatKeyML
+Purpose:
+	 This function is similar to TleGetSatKey but designed to be used in Matlab. 
+	 Matlab doesn't correctly return the 19-digit satellite key using TleGetSatKey. This method is an alternative way to return the satKey output.
+	 This function is useful when Tle.dll is used in applications that require only one record (one TLE entry) for one satellite, and which refer to that TLE by its satellite number. This function can be used to retrieve a satKey in that situation, which is useful since the Standardized Astrodynamic Algorithms library works only with satKeys.
+	 A negative value will be returned in satKey if there is an error.
+Syntax: 
+	void TleGetSatKeyML((in-Integer) satNum, (out-Long) satKey)
+Parameters: 
+	satNum: Satellite number
+	satKey: The satKey of the satellite if a satellite with the requested number is found in the set of loaded satellites, a negative value if there is an error.
+=======================================================================================
+ 38. TleFieldsToSatKey
+Purpose:
+	 Computes a satKey from the input data.
+	 There is no need for a matching satellite to be loaded prior to using this function. The function simply computes the satKey from the provided fields.
+	 
+	 This is the proper way to reconstruct a satKey from its fields. If you use your own routine to do this, the computed satKey might be different. 
+	 A negative value will be returned if there is an error.
+Syntax: 
+	__int64 TleFieldsToSatKey((in-Integer) satNum, (in-Integer) epochYr, (in-Double) epochDays, (in-Integer) ephType)
+Parameters: 
+	satNum: Satellite number
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	ephType: Ephemeris type
+Return Value:
+	The resulting satellite key if the computation is successful; a negative value if there is an error.
+=======================================================================================
+ 39. TleFieldsToSatKeyML
+Purpose:
+	 This function is similar to TleFieldsToSatKey but designed to be used in Matlab. 
+	 Matlab doesn't correctly return the 19-digit satellite key using TleFieldsToSatKey. This method is an alternative way to return the satKey output.
+	 There is no need for a matching satellite to be loaded prior to using this function. The function simply computes the satKey from the provided fields.
+	 
+	 This is the proper way to reconstruct a satKey from its fields. If you use your own routine to do this, the computed satKey might be different.
+	 A negative value will be returned in satKey if there is an error.
+Syntax: 
+	void TleFieldsToSatKeyML((in-Integer) satNum, (in-Integer) epochYr, (in-Double) epochDays, (in-Integer) ephType, (out-Long) satKey)
+Parameters: 
+	satNum: Satellite number
+	epochYr: Element epoch time - year, [YY]YY
+	epochDays: Element epoch time - day of year, DDD.DDDDDDDD
+	ephType: Ephemeris type
+	satKey: The satKey if the computation is successful, a negative value if there is an error.
+=======================================================================================
+ 40. TleAddSatFrArray
+Purpose:
+	 Adds a TLE (satellite), using its data stored in the input parameters.
+Syntax: 
+	__int64 TleAddSatFrArray((in-Double[64]) xa_tle, (in-Character[512]) xs_tle)
+Parameters: 
+	xa_tle: Array containing TLE's numerical fields (see XA_TLE_?)
+	xs_tle: Input string that contains all TLE's text fields (see XS_TLE_?)
+Return Value:
+	The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 41. TleAddSatFrArrayML
+Purpose:
+	 This function is similar to TleAddSatFrArray but designed to be used in Matlab. 
+Syntax: 
+	void TleAddSatFrArrayML((in-Double[64]) xa_tle, (in-Character[512]) xs_tle, (out-Long) satKey)
+Parameters: 
+	xa_tle: Array containing TLE's numerical fields (see XA_TLE_?)
+	xs_tle: Input string that contains all TLE's text fields (see XS_TLE_?)
+	satKey: The satKey of the newly added TLE on success, a negative value on error.
+=======================================================================================
+ 42. TleUpdateSatFrArray
+Purpose:
+	 Updates existing TLE data with the provided new data stored in the input parameters. Note: satNum, year, day, and ephtype can't be updated.
+	 nDotO2 and n2DotO6 values are not used in the SGP4 propagator. However, some users still want to preserve the integrity of all input data.
+Syntax: 
+	int TleUpdateSatFrArray((in-Long) satKey, (in-Double[64]) xa_tle, (in-Character[512]) xs_tle)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_tle: Array containing TLE's numerical fields (see XA_TLE_?)
+	xs_tle: Input string that contains all TLE's text fields (see XS_TLE_?)
+Return Value:
+	0 if the TLE is successfully updated, non-0 if there is an error.
+=======================================================================================
+ 43. TleDataToArray
+Purpose:
+	 Retrieves TLE data and stored it in the passing parameters
+Syntax: 
+	int TleDataToArray((in-Long) satKey, (out-Double[64]) xa_tle, (out-Character[512]) xs_tle)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_tle: Array containing TLE's numerical fields (see XA_TLE_?)
+	xs_tle: Output string that contains all TLE's text fields (see XS_TLE_?)
+Return Value:
+	0 if all values are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 44. TleLinesToCsv
+Purpose:
+	 Converts TLE two line format to CSV format
+Syntax: 
+	int TleLinesToCsv((in-Character[512]) line1, (in-Character[512]) line2, (out-Character[512]) csvline)
+Parameters: 
+	line1: The first line of a two line element set
+	line2: The second line of a two line element set
+	csvline: A string to hold the TLE in csv format.
+Return Value:
+	0 if the conversion is successful, non-0 if there is an error.
+=======================================================================================
+ 45. TleCsvToLines
+Purpose:
+	 Converts TLE CSV format to two line format
+Syntax: 
+	int TleCsvToLines((in-Character[512]) csvLine, (in-Integer) newSatno, (out-Character[512]) line1, (out-Character[512]) line2)
+Parameters: 
+	csvLine: The input TLE in CSV format
+	newSatno: New satellite number to replace what's in CSV obs if desired (won't use/renumber if it's zero)
+	line1: The output first line of the two line element set
+	line2: The output second line of the two line element set
+Return Value:
+	0 if the conversion is successful, non-0 if there is an error.
+=======================================================================================
+ 46. SetTleKeyMode
+Purpose:
+	 Sets TLE key mode - This function was deprecated, please use DllMain/SetElsetKeyMode() instead
+Syntax: 
+	int SetTleKeyMode((in-Integer) tle_keyMode)
+Parameters: 
+	tle_keyMode: Desired Tle key mode
+Return Value:
+	0 if the set is successful, non-0 if there is an error.
+=======================================================================================
+ 47. GetTleKeyMode
+Purpose:
+	 Gets current TLE key mode - This function was deprecated, please use DllMain/GetElsetKeyMode() instead
+Syntax: 
+	int GetTleKeyMode()
+Parameters: 
+	None
+Return Value:
+	Current Tle key mode
+=======================================================================================
+ 48. GetCheckSums
+Purpose:
+	 Finds the check sums of TLE lines
+Syntax: 
+	void GetCheckSums((in-Character[512]) line1, (in-Character[512]) line2, (out-Integer) chkSum1, (out-Integer) chkSum2, (out-Integer) errCode)
+Parameters: 
+	line1: The input TLE line 1 in TLE format
+	line2: The input TLE line 2 in TLE format
+	chkSum1: Check Sum of Line 1
+	chkSum2: Check Sum of Line 2
+	errCode: Error code - 0 if successful, non-0 if there is an error
+=======================================================================================
+
+
+

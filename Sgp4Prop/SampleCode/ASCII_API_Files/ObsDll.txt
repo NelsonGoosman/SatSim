@@ -1,0 +1,803 @@
+  1. ObsInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Obs DLL for use in the program
+Syntax: 
+	int ObsInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if Obs.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. ObsGetInfo
+Purpose:
+	 Returns information about the current version of Obs DLL. 
+	 The information is placed in the string parameter passed in.
+Syntax: 
+	void ObsGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Obs.dll
+=======================================================================================
+  3. ObsSetTTYYear
+Purpose:
+	 Sets the year for transmission observation format (TTY) input files
+Syntax: 
+	void ObsSetTTYYear((in-Integer) ttyYear)
+Parameters: 
+	ttyYear: 2 or 4 digits year
+=======================================================================================
+  4. ObsLoadFile
+Purpose:
+	 Loads observation data from an input text file
+Syntax: 
+	int ObsLoadFile((in-Character[512]) obsFile)
+Parameters: 
+	obsFile: The name of the file containing obs-related data
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  5. ObsSaveFile
+Purpose:
+	 Saves the currently loaded obs data to a file
+Syntax: 
+	int ObsSaveFile((in-Character[512]) obsFile, (in-Integer) saveMode, (in-Integer) obsForm)
+Parameters: 
+	obsFile: The name of the file in which to save the loaded obs
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	obsForm: Specifies the mode in which to save the file (0 = B3 format, 1 = TTY, 2 = CSV)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  6. ObsRemove
+Purpose:
+	 Removes an obs, represented by the obsKey, from the set of currently loaded observations
+Syntax: 
+	int ObsRemove((in-Long) obsKey)
+Parameters: 
+	obsKey: The observation's unique key
+Return Value:
+	0 if the observation is successfully removed, non-0 if there is an error
+=======================================================================================
+  7. ObsRemoveAll
+Purpose:
+	 Removes all currently loaded observations from memory
+Syntax: 
+	int ObsRemoveAll()
+Parameters: 
+	None
+Return Value:
+	0 if all the loaded observations are removed successfully, non-0 if there is an error
+=======================================================================================
+  8. ObsGetCount
+Purpose:
+	 Returns the number of observations currently loaded
+Syntax: 
+	int ObsGetCount()
+Parameters: 
+	None
+Return Value:
+	the number of observations currently loaded
+=======================================================================================
+  9. ObsGetLoaded
+Purpose:
+	 Retrieves all of the currently loaded obsKeys. These obsKeys can be used to access the internal data for the observations
+	 Sort options (order):
+	 (+/-)1 = (descending/ascending) time, sensor, obsType, elev
+	 (+/-)2 = (descending/ascending) time, elevation
+	 (+/-)3 = (descending/ascending) time, sensor, otype, el, satno
+	 (+/-)4 = (descending/ascending) sensor, satno, time, elev
+	 (+/-)5 = (descending/ascending) sensor, time, elevation
+	 (+/-)6 = (descending/ascending) sensor, satno, obsType, time, elev
+	 (+/-)7 = (descending/ascending) satno, time, sensor, otype, el
+	 (+/-)8 = (reversed/same)        order as obs were read
+	 9 : as is in the tree
+Syntax: 
+	void ObsGetLoaded((in-Integer) order, (out-Long[*]) obsKeys)
+Parameters: 
+	order: Specifies the order in which the obsKeys should be returned
+	obsKeys: The array in which to store the obsKeys
+=======================================================================================
+ 10. ObsLoadCard
+Purpose:
+	 Loads a single observation-typed card
+Syntax: 
+	int ObsLoadCard((in-Character[512]) card)
+Parameters: 
+	card: Any single observation-typed card (B3, B3E, TTY, ...) but not OBSFIL=
+Return Value:
+	0 if the input card is read successfully, non-0 if there is an error
+=======================================================================================
+ 11. ObsLoadTwoCards
+Purpose:
+	 Loads a one-line or two-line observation 
+Syntax: 
+	int ObsLoadTwoCards((in-Character[512]) card1, (in-Character[512]) card2)
+Parameters: 
+	card1: Any single observation-typed card (B3, B3E, TTY, ...) or Card #1 of TTY obs type 4, 7, 8, 9
+	card2: Card #2 of TTY obs type 4, 7, 8, 9
+Return Value:
+	0 if the input card1/card2 are read successfully, non-0 if there is an error
+=======================================================================================
+ 12. ObsAddFrB3Card
+Purpose:
+	 Adds an observation from a string in B3 observation format
+Syntax: 
+	__int64 ObsAddFrB3Card((in-Character[512]) card)
+Parameters: 
+	card: The input string in B3 observation format
+Return Value:
+	The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 13. ObsAddFrB3CardML
+Purpose:
+	 Works like ObsAddFrB3Card but designed for Matlab
+Syntax: 
+	void ObsAddFrB3CardML((in-Character[512]) card, (out-Long) obsKey)
+Parameters: 
+	card: The input string in B3 observation format
+	obsKey: The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 14. ObsB3ToCsv
+Purpose:
+	 Converts B3 format to csv format without loading B3 obs into memory
+Syntax: 
+	int ObsB3ToCsv((in-Character[512]) card, (out-Character[512]) csvLine)
+Parameters: 
+	card: The input string in B3 observation format
+	csvLine: The output string in csv observation format
+Return Value:
+	0 if the conversion is successful, non-0 if there is an error
+=======================================================================================
+ 15. ObsCsvToB3
+Purpose:
+	 Converts CSV format to B3 format without loading CSV obs into memory
+Syntax: 
+	int ObsCsvToB3((in-Character[512]) csvLine, (in-Integer) newSatno, (out-Character[512]) card)
+Parameters: 
+	csvLine: The input string in csv observation format
+	newSatno: New satellite number to replace what's in CSV obs if desired (value of zero does not renumber)
+	card: The output string in B3 observation format
+Return Value:
+	0 if the conversion is successful, non-0 if there is an error
+=======================================================================================
+ 16. ObsAddFrTTYCards
+Purpose:
+	 Adds an observation from a TTY (1 line or 2 lines) observation format
+Syntax: 
+	__int64 ObsAddFrTTYCards((in-Character[512]) card1, (in-Character[512]) card2)
+Parameters: 
+	card1: Card #1 of a TTY obs
+	card2: Card #2 of TTY obs type 4, 7, 8, 9 or an empty string for other TTY obs types
+Return Value:
+	The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 17. ObsAddFrTTYCardsML
+Purpose:
+	 Works like ObsAddFrTTYCards but designed for Matlab
+Syntax: 
+	void ObsAddFrTTYCardsML((in-Character[512]) card1, (in-Character[512]) card2, (out-Long) obsKey)
+Parameters: 
+	card1: Card #1 of a TTY obs
+	card2: Card #2 of TTY obs type 4, 7, 8, 9 or an empty string for other TTY obs types
+	obsKey: The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 18. ObsTTYToCsv
+Purpose:
+	 Converts TTY format to CSV format without loading TTY obs into memory
+Syntax: 
+	int ObsTTYToCsv((in-Character[512]) card1, (in-Character[512]) card2, (out-Character[512]) csvLine)
+Parameters: 
+	card1: Card #1 of a TTY obs
+	card2: Card #2 of TTY obs type 4, 7, 8, 9 or an empty string for other TTY obs types
+	csvLine: The obs in csv format
+Return Value:
+	0 if the conversion is successful, non-0 if there is an error
+=======================================================================================
+ 19. ObsCsvToTTY
+Purpose:
+	 Converts CSV format to TTY format without loading CSV obs into memory
+Syntax: 
+	int ObsCsvToTTY((in-Character[512]) csvLine, (in-Integer) newSatno, (out-Character[512]) card1, (out-Character[512]) card2)
+Parameters: 
+	csvLine: The obs in csv format
+	newSatno: New satellite number to replace what's in CSV obs if desired (value of zero does not renumber)
+	card1: Card #1 of a TTY obs
+	card2: Card #2 of TTY obs type 4, 7, 8, 9 or an empty string for other TTY obs types
+Return Value:
+	0 if the conversion is successful, non-0 if there is an error
+=======================================================================================
+ 20. ObsAddFrCsv
+Purpose:
+	 Adds one observation using csv obs string 
+Syntax: 
+	__int64 ObsAddFrCsv((in-Character[512]) csvLine)
+Parameters: 
+	csvLine: Input csv obs string
+Return Value:
+	The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 21. ObsAddFrCsvML
+Purpose:
+	 Adds one observation using csv obs string - for MatLab
+Syntax: 
+	void ObsAddFrCsvML((in-Character[512]) csvLine, (out-Long) obsKey)
+Parameters: 
+	csvLine: Input csv obs string
+	obsKey: The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 22. ObsAddFrRfCard
+Purpose:
+	 Adds one observation using RF TDOA/FDOA obs string 
+	 Notes: Sensors listed in the input RF obs have to be loaded prior to this call
+Syntax: 
+	__int64 ObsAddFrRfCard((in-Character[512]) rfObsLine)
+Parameters: 
+	rfObsLine: Input RF obs string
+Return Value:
+	The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 23. ObsAddFrRfCardML
+Purpose:
+	 Adds one observation using RF TDOA/FDOA obs string - for MatLab
+Syntax: 
+	void ObsAddFrRfCardML((in-Character[512]) rfObsLine, (out-Long) obsKey)
+Parameters: 
+	rfObsLine: Input RF obs string
+	obsKey: The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 24. ObsAddFrFields
+Purpose:
+	 Adds one observation using its input data. Depending on the observation type, some input data might be unavailable and left blank
+Syntax: 
+	__int64 ObsAddFrFields((in-Character) secClass, (in-Integer) satNum, (in-Integer) senNum, (in-Double) obsTimeDs50utc, (in-Double) elOrDec, (in-Double) azOrRA, (in-Double) slantRange, (in-Double) rangeRate, (in-Double) elRate, (in-Double) azRate, (in-Double) rangeAccel, (in-Character) obsType, (in-Integer) trackInd, (in-Integer) astat, (in-Integer) siteTag, (in-Integer) spadocTag, (in-Double[3]) pos, (in-Double[3]) vel, (in-Double[128]) extArr)
+Parameters: 
+	secClass: Security classification
+	satNum: Satellite number
+	senNum: Sensor number
+	obsTimeDs50utc: Observation time in days since 1950 UTC
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s), or equinox indicator (0-3) for obs type 5/9
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	trackInd: Track position indicator (3=start track ob, 4=in track ob, 5=end track ob)
+	astat: Association status assigned by SPADOC
+	siteTag: Original satellite number
+	spadocTag: SPADOC-asssigned tag number
+	pos: Position XYZ (km) (ECI or EFG)
+	vel: Velocity XYZ (km/s) (ECI or EFG)
+	extArr: Extra array - future use
+Return Value:
+	The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 25. ObsAddFrFieldsML
+Purpose:
+	 Works like ObsAddFrFields but designed for Matlab
+Syntax: 
+	void ObsAddFrFieldsML((in-Character) secClass, (in-Integer) satNum, (in-Integer) senNum, (in-Double) obsTimeDs50utc, (in-Double) elOrDec, (in-Double) azOrRA, (in-Double) slantRange, (in-Double) rangeRate, (in-Double) elRate, (in-Double) azRate, (in-Double) rangeAccel, (in-Character) obsType, (in-Integer) trackInd, (in-Integer) astat, (in-Integer) siteTag, (in-Integer) spadocTag, (in-Double[3]) pos, (in-Double[3]) vel, (in-Double[128]) extArr, (out-Long) obsKey)
+Parameters: 
+	secClass: Security classification
+	satNum: Satellite number
+	senNum: Sensor number
+	obsTimeDs50utc: Observation time in days since 1950 UTC
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s), or equinox indicator (0-3) for obs type 5/9
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	trackInd: Track position indicator (3=start track ob, 4=in track ob, 5=end track ob)
+	astat: Association status assigned by SPADOC
+	siteTag: Original satellite number
+	spadocTag: SPADOC-asssigned tag number
+	pos: Position XYZ (km) (ECI or EFG)
+	vel: Velocity XYZ (km/s) (ECI or EFG)
+	extArr: Extra array - future use
+	obsKey: The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 26. ObsAddFrArray
+Purpose:
+	 Adds one observation using its input data stored in an array. Depending on the observation type, some input data might be unavailable and left blank
+Syntax: 
+	__int64 ObsAddFrArray((in-Double[64]) xa_obs)
+Parameters: 
+	xa_obs: Array containing observation data (see XA_OBS_?)
+Return Value:
+	The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 27. ObsAddFrArrayML
+Purpose:
+	 Works like ObsAddFrArray but designed for Matlab
+Syntax: 
+	void ObsAddFrArrayML((in-Double[64]) xa_obs, (out-Long) obsKey)
+Parameters: 
+	xa_obs: Array containing observation data (see XA_OBS_?)
+	obsKey: The obsKey of the newly added observation on success, a negative value on error
+=======================================================================================
+ 28. ObsGetAllFields
+Purpose:
+	 Retrieves all observation data in a single function call. Depending on the observation type, some input data might be unavailable
+Syntax: 
+	int ObsGetAllFields((in-Long) obsKey, (out-Character) secClass, (out-Integer) satNum, (out-Integer) senNum, (out-Double) obsTimeDs50utc, (out-Double) elOrDec, (out-Double) azOrRA, (out-Double) slantRange, (out-Double) rangeRate, (out-Double) elRate, (out-Double) azRate, (out-Double) rangeAccel, (out-Character) obsType, (out-Integer) trackInd, (out-Integer) astat, (out-Integer) siteTag, (out-Integer) spadocTag, (out-Double[3]) pos, (out-Double[3]) vel, (out-Double[128]) extArr)
+Parameters: 
+	obsKey: The unique key of the requested observation
+	secClass: Security classification
+	satNum: Satellite number
+	senNum: Sensor number
+	obsTimeDs50utc: Observation time in days since 1950 UTC
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s)
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	trackInd: Track position indicator (3=start track ob, 4=in track ob, 5=end track ob)
+	astat: Association status assigned by SPADOC
+	siteTag: Original satellite number
+	spadocTag: SPADOC-asssigned tag number
+	pos: Position XYZ (km) (ECI or EFG)
+	vel: Velocity XYZ (km/s) (ECI or EFG)
+	extArr: Extra array - future use
+Return Value:
+	0 if all values are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 29. ObsDataToArray
+Purpose:
+	 Retrieves observation data and stored it in the passing array. Depending on the observation type, some data fields might be unavailable
+	 See ObsGetField for description of xa_obs elements
+Syntax: 
+	int ObsDataToArray((in-Long) obsKey, (out-Double[64]) xa_obs)
+Parameters: 
+	obsKey: The unique key of the requested observation
+	xa_obs: The array containing observation data (see XA_OBS_?)
+Return Value:
+	0 if all values are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 30. ObsUpdateFrFields
+Purpose:
+	 Updates existing observation data with the provided new data
+Syntax: 
+	int ObsUpdateFrFields((in-Long) obsKey, (in-Character) secClass, (in-Double) elOrDec, (in-Double) azOrRA, (in-Double) slantRange, (in-Double) rangeRate, (in-Double) elRate, (in-Double) azRate, (in-Double) rangeAccel, (in-Character) obsType, (in-Integer) trackInd, (in-Integer) astat, (in-Integer) siteTag, (in-Integer) spadocTag, (in-Double[3]) pos, (in-Double[3]) vel, (in-Double[128]) extArr)
+Parameters: 
+	obsKey: The unique key of the requested observation
+	secClass: Security classification
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s), or equinox indicator (0-3) for obs type 5/9
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	trackInd: Track position indicator (3=start track ob, 4=in track ob, 5=end track obs)
+	astat: Association status assigned by SPADOC
+	siteTag: Original satellite number
+	spadocTag: SPADOC-asssigned tag number
+	pos: Position XYZ (km) (ECI or EFG)
+	vel: Velocity XYZ (km/s) (ECI or EFG)
+	extArr: Extra array - future use
+Return Value:
+	0 if the requested observation is successfully updated, non-0 if there is an error
+=======================================================================================
+ 31. ObsGetField
+Purpose:
+	 Retrieves the value of a specific field of an observation
+Syntax: 
+	int ObsGetField((in-Long) obsKey, (in-Integer) xf_Obs, (out-Character[512]) strValue)
+Parameters: 
+	obsKey: The observation's unique key
+	xf_Obs: The predefined number specifying which field to retrieve (see XF_OBS_?)
+	strValue: A string to contain the value of the requested field
+Return Value:
+	0 if the observation data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 32. ObsSetField
+Purpose:
+	 Updates the value of a field of an observation
+	 See ObsGetField for a description of the xf_Obs parameter.
+	 Satellite number, sensor number, and observation time are not allowed to be updated.
+Syntax: 
+	int ObsSetField((in-Long) obsKey, (in-Integer) xf_Obs, (in-Character[512]) strValue)
+Parameters: 
+	obsKey: The observation's unique key
+	xf_Obs: The predefined number specifying which field to update (see XF_OBS_?)
+	strValue: The new value of the specified field, expressed as a string
+Return Value:
+	0 if the observation is successfully updated, non-0 if there is an error
+=======================================================================================
+ 33. ObsGetB3Card
+Purpose:
+	 Returns observation in B3-card string
+Syntax: 
+	int ObsGetB3Card((in-Long) obsKey, (out-Character[512]) b3Card)
+Parameters: 
+	obsKey: The observation's unique key
+	b3Card: A string to hold the B3 observation format
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 34. ObsGetTTYCard
+Purpose:
+	 Returns observation in TTY-card string
+Syntax: 
+	int ObsGetTTYCard((in-Long) obsKey, (out-Character[512]) ttyCard1, (out-Character[512]) ttyCard2)
+Parameters: 
+	obsKey: The observation's unique key
+	ttyCard1: First line of a TTY card
+	ttyCard2: Second line of a TTY card (might be unavailable for certain obs type)
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 35. ObsGetCsv
+Purpose:
+	 Returns observation in CSV-format string
+Syntax: 
+	int ObsGetCsv((in-Long) obsKey, (out-Character[512]) csvline)
+Parameters: 
+	obsKey: The observation's unique key
+	csvline: A string to hold the CSV observation format
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 36. ObsGetRfCard
+Purpose:
+	 Returns observation in RF obs format, a string 
+Syntax: 
+	int ObsGetRfCard((in-Long) obsKey, (out-Character[512]) rfCard)
+Parameters: 
+	obsKey: The observation's unique key
+	rfCard: A string to hold the Rf observation format
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 37. ObsFieldsToB3Card
+Purpose:
+	 Constructs a B3-card string from the input observation data fields
+Syntax: 
+	void ObsFieldsToB3Card((in-Character) secClass, (in-Integer) satNum, (in-Integer) senNum, (in-Double) obsTimeDs50utc, (in-Double) elOrDec, (in-Double) azOrRA, (in-Double) slantRange, (in-Double) rangeRate, (in-Double) elRate, (in-Double) azRate, (in-Double) rangeAccel, (in-Character) obsType, (in-Integer) trackInd, (in-Integer) astat, (in-Integer) siteTag, (in-Integer) spadocTag, (in-Double[3]) pos, (out-Character[512]) b3Card)
+Parameters: 
+	secClass: Security classification
+	satNum: Satellite number
+	senNum: Sensor number
+	obsTimeDs50utc: Observation time in days since 1950 UTC
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s), or equinox indicator (0-3) for obs type 5/9
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	trackInd: Track position indicator (3=start track ob, 4=in track ob, 5=end track ob)
+	astat: Association status assigned by SPADOC
+	siteTag: Original satellite number
+	spadocTag: SPADOC-asssigned tag number
+	pos: Position XYZ (km) (ECI or EFG)
+	b3Card: A string to hold the B3 observation format
+=======================================================================================
+ 38. ObsFieldsToCsv
+Purpose:
+	 Constructs a csv string from the input observation data fields
+Syntax: 
+	void ObsFieldsToCsv((in-Character) secClass, (in-Integer) satNum, (in-Integer) senNum, (in-Double) obsTimeDs50utc, (in-Double) elOrDec, (in-Double) azOrRA, (in-Double) slantRange, (in-Double) rangeRate, (in-Double) elRate, (in-Double) azRate, (in-Double) rangeAccel, (in-Character) obsType, (in-Integer) trackInd, (in-Integer) astat, (in-Integer) siteTag, (in-Integer) spadocTag, (in-Double[3]) pos, (out-Character[512]) csvLine)
+Parameters: 
+	secClass: Security classification
+	satNum: Satellite number
+	senNum: Sensor number
+	obsTimeDs50utc: Observation time in days since 1950 UTC
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s), or equinox indicator (0-3) for obs type 5/9
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	trackInd: Track position indicator (3=start track ob, 4=in track ob, 5=end track ob)
+	astat: Association status assigned by SPADOC
+	siteTag: Original satellite number
+	spadocTag: SPADOC-asssigned tag number
+	pos: Position XYZ (km) (ECI or EFG)
+	csvLine: A string to hold the csv observation format
+=======================================================================================
+ 39. ObsFieldsToTTYCard
+Purpose:
+	 Constructs a TTY-card string from the input observation data fields
+Syntax: 
+	void ObsFieldsToTTYCard((in-Character) secClass, (in-Integer) satNum, (in-Integer) senNum, (in-Double) obsTimeDs50utc, (in-Double) elOrDec, (in-Double) azOrRA, (in-Double) slantRange, (in-Double) rangeRate, (in-Double) elRate, (in-Double) azRate, (in-Double) rangeAccel, (in-Character) obsType, (in-Double[3]) pos, (out-Character[512]) ttyCard1, (out-Character[512]) ttyCard2)
+Parameters: 
+	secClass: Security classification
+	satNum: Satellite number
+	senNum: Sensor number
+	obsTimeDs50utc: Observation time in days since 1950 UTC
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s), or equinox indicator (0-3) for obs type 5/9
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	pos: Position XYZ (km) (ECI or EFG)
+	ttyCard1: First line of a TTY card
+	ttyCard2: Second line of a TTY card (might be unavailable for certain obs type)
+=======================================================================================
+ 40. ObsFieldsToObsKey
+Purpose:
+	 Computes an obsKey from individually provided fields
+Syntax: 
+	__int64 ObsFieldsToObsKey((in-Integer) satNum, (in-Integer) senNum, (in-Double) obsTimeDs50utc)
+Parameters: 
+	satNum: Input satellite's number
+	senNum: Input sensor's number
+	obsTimeDs50utc: Input observation time in days since 1950, UTC
+Return Value:
+	The newly created observation Key
+=======================================================================================
+ 41. ObsFieldsToObsKeyML
+Purpose:
+	 Works like ObsFieldsToObsKey but designed for Matlab
+Syntax: 
+	void ObsFieldsToObsKeyML((in-Integer) satNum, (in-Integer) senNum, (in-Double) obsTimeDs50utc, (out-Long) obsKey)
+Parameters: 
+	satNum: Input satellite's number
+	senNum: Input sensor's number
+	obsTimeDs50utc: Input observation time in days since 1950, UTC
+	obsKey: The newly created observation Key
+=======================================================================================
+ 42. ObsB3Parse
+Purpose:
+	 Parses observation data from a B3-card (or B3E) string / one-line TTY / or CSV - Converts obs data to TEME of Date if neccessary
+Syntax: 
+	int ObsB3Parse((in-Character[512]) b3ObsCard, (out-Character) secClass, (out-Integer) satNum, (out-Integer) senNum, (out-Double) obsTimeDs50utc, (out-Double) elOrDec, (out-Double) azOrRA, (out-Double) slantRange, (out-Double) rangeRate, (out-Double) elRate, (out-Double) azRate, (out-Double) rangeAccel, (out-Character) obsType, (out-Integer) trackInd, (out-Integer) astat, (out-Integer) siteTag, (out-Integer) spadocTag, (out-Double[3]) pos)
+Parameters: 
+	b3ObsCard: Input observation-typed string
+	secClass: Security classification
+	satNum: Satellite number
+	senNum: Sensor number
+	obsTimeDs50utc: Observation time in days since 1950 UTC
+	elOrDec: Elevation or declination (deg)
+	azOrRA: Azimuth or right-ascension (deg)
+	slantRange: Range (km)
+	rangeRate: Range rate (km/s)
+	elRate: Elevation rate (deg/s)
+	azRate: Azimuth rate (deg/s)
+	rangeAccel: Range acceleration (km/s^2)
+	obsType: Observation type
+	trackInd: Track position indicator (3=start track ob, 4=in track ob, 5=end track ob)
+	astat: Association status assigned by SPADOC
+	siteTag: Original satellite number
+	spadocTag: SPADOC-asssigned tag number
+	pos: Position XYZ (km) (ECI or EFG)
+Return Value:
+	0 if the data is successfully parsed, non-0 if there is an error
+=======================================================================================
+ 43. ObsParse
+Purpose:
+	 Parses any observation data format (B3-card (or B3E) string / one or two line TTY / CSV / RF obs - No conversion takes place
+Syntax: 
+	int ObsParse((in-Character[512]) line1, (in-Character[512]) line2, (out-Double[64]) xa_obs)
+Parameters: 
+	line1: Input observation string 1 (B3/B3E/line 1 TTY/CSV)
+	line2: Input observation string 2 (line 2 of two-line TTY)
+	xa_obs: The array containing observation data (see XA_OBS_?)
+Return Value:
+	0 if the data is successfully parsed, non-0 if there is an error
+=======================================================================================
+ 44. ObsLoadFileGID
+Purpose:
+	 Loads observation data from an input text file and group them together in the specified groupd id (gid).
+	 This allows the users to easily manage (load/retrieve/remove/save) a group of observations using the group id (gid)
+Syntax: 
+	int ObsLoadFileGID((in-Character[512]) obsFile, (in-Integer) gid)
+Parameters: 
+	obsFile: The name of the file containing obs-related data
+	gid: User specified group id
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+ 45. ObsSaveFileGID
+Purpose:
+	 Saves the currently loaded obs data belong to the specified group id (gid) to a file 
+Syntax: 
+	int ObsSaveFileGID((in-Character[512]) obsFile, (in-Integer) gid, (in-Integer) saveMode, (in-Integer) obsForm)
+Parameters: 
+	obsFile: The name of the file in which to save the settings
+	gid: Group ID number
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	obsForm: Specifies the obs format in which to save the file (0 = B3 format, 1 = TTY, 2 = CSV)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+ 46. ObsRemoveGID
+Purpose:
+	 Removes all observations belong to the specified group id (gid) from the set of currently loaded observations
+Syntax: 
+	int ObsRemoveGID((in-Integer) gid)
+Parameters: 
+	gid: Group ID number
+Return Value:
+	0 if the observations are successfully removed, non-0 if there is an error
+=======================================================================================
+ 47. ObsGetCountGID
+Purpose:
+	 Returns the number of observations currently loaded that have the same gid
+Syntax: 
+	int ObsGetCountGID((in-Integer) gid)
+Parameters: 
+	gid: Group ID number
+Return Value:
+	The number of observations currently loaded that have the same group id
+=======================================================================================
+ 48. ObsGetLoadedGID
+Purpose:
+	 Retrieves all of the currently loaded obsKeys that have the same gid. These obsKeys can be used to access the internal data for the observations
+	 Sort options (order):
+	 (+/-)1 = (descending/ascending) time, sensor, obsType, elev
+	 (+/-)2 = (descending/ascending) time, elevation
+	 (+/-)3 = (descending/ascending) time, sensor, otype, el, satno
+	 (+/-)4 = (descending/ascending) sensor, satno, time, elev
+	 (+/-)5 = (descending/ascending) sensor, time, elevation
+	 (+/-)6 = (descending/ascending) sensor, satno, obsType, time, elev
+	 (+/-)7 = (descending/ascending) satno, time, sensor, otype, el
+	 (+/-)8 = (reversed/same)        order as obs were read
+	 9 : as is in the tree
+Syntax: 
+	void ObsGetLoadedGID((in-Integer) gid, (in-Integer) order, (out-Long[*]) obsKeys)
+Parameters: 
+	gid: Group ID number
+	order: Specifies the order in which the obsKeys should be returned
+	obsKeys: The array in which to store the obsKeys
+=======================================================================================
+ 49. ObsTypeCToI
+Purpose:
+	 Converts obs type from character to integer
+Syntax: 
+	int ObsTypeCToI((in-Character) obsTypeChar)
+Parameters: 
+	obsTypeChar: The input obs type character
+Return Value:
+	The resulting obs type integer
+=======================================================================================
+ 50. ObsTypeIToC
+Purpose:
+	 Converts obs type from integer to character
+Syntax: 
+	char ObsTypeIToC((in-Integer) obsTypeInt)
+Parameters: 
+	obsTypeInt: The input obs type integer
+Return Value:
+	The resulting obs type character
+=======================================================================================
+ 51. ObsResetSelObs
+Purpose:
+	 Resets obs selection settings
+Syntax: 
+	void ObsResetSelObs()
+Parameters: 
+	None
+=======================================================================================
+ 52. ObsGetStates
+Purpose:
+	 Computes other states of the input observation
+	 
+	 The table below indicates which index values correspond to which fields in the xa_obState array.
+	 
+	 table
+	 
+	 Index
+	 Index Interpretation
+	 
+	 0Satellite number
+	 1Sensor number
+	 2Observation time in DS50UTC
+	 10Position X/ECI (km)
+	 11Position Y/ECI (km)
+	 12Position Z/ECI (km)
+	 13Velocity X/ECI (km/s)
+	 14Velocity Y/ECI (km/s)
+	 15Velocity Z/ECI (km/s)
+	 16Geodetic latitude (deg)
+	 17Geodetic longitude (deg)
+	 18Geodetic height (km)
+	 19Position X/EFG (km)
+	 20Position Y/EFG (km)
+	 21Position Z/EFG (km)
+	 
+Syntax: 
+	int ObsGetStates((in-Long) obsKey, (in-Double) range_km, (out-Double[64]) xa_obState)
+Parameters: 
+	obsKey: The observation's unique key
+	range_km: Use this default range (km) for angle only obs
+	xa_obState: Data derived from the obs data (see XA_OBSTATE_?)
+Return Value:
+	0 if the observation states are successfully computed
+=======================================================================================
+ 53. ObsDataToStates
+Purpose:
+	 Computes observation states from the observation data
+	 See ObsGetStates for a list of the values for the xa_obState parameter.
+Syntax: 
+	int ObsDataToStates((in-Double[64]) xa_obs, (out-Double[64]) xa_obState)
+Parameters: 
+	xa_obs: Array containing observation data (see XA_OBS_?)
+	xa_obState: Data derived from the obs data (see XA_OBSTATE_?)
+Return Value:
+	0 if the observation states are successfully computed
+=======================================================================================
+ 54. ObsArrToLines
+Purpose:
+	 Reconstructs obs string (B3-card/one or two line TTY/CSV) from obs data in the input array xa_obs
+Syntax: 
+	int ObsArrToLines((in-Double[64]) xa_obs, (in-Integer) obsForm, (out-Character[512]) line1, (out-Character[512]) line2)
+Parameters: 
+	xa_obs: The array containing observation data (see XA_OBS_?)
+	obsForm: Desired obs string format (B3 = 0, TTY=1, CSV=2)
+	line1: Output observation string 1 (B3/B3E/line 1 TTY/CSV)
+	line2: Output observation string 2 (line 2 of two-line TTY if obsForm = 1)
+Return Value:
+	0 if the data is successfully , non-0 if there is an error
+=======================================================================================
+ 55. SetObsKeyMode
+Purpose:
+	 Sets OBS key mode
+	 This mode can also be turned on if the user loads an input text file that includes this line - "AS_DMA_OBS_ON" -
+	 and is currently calling any of these methods: DllMainLoadFile(), or ObsLoadFile()
+Syntax: 
+	int SetObsKeyMode((in-Integer) obs_keyMode)
+Parameters: 
+	obs_keyMode: Desired obs key mode (see OBS_KEYMODE_?)
+Return Value:
+	0 if the set is successful, non-0 if there is an error.
+=======================================================================================
+ 56. GetObsKeyMode
+Purpose:
+	 Gets current OBS key mode
+Syntax: 
+	int GetObsKeyMode()
+Parameters: 
+	None
+Return Value:
+	Current obs key mode (see OBS_KEYMODE_?)
+=======================================================================================
+ 57. SatNumFrObsKey
+Purpose:
+	 Returs the satellite number associated with the input obsKey
+Syntax: 
+	int SatNumFrObsKey((in-Long) obsKey)
+Parameters: 
+	obsKey: The observation's unique key
+Return Value:
+	The satellite number associated with the input obsKey (satNum = -1 if obsKey doesn't exist)
+=======================================================================================
+ 58. SenNumFrObsKey
+Purpose:
+	 Returs the sensor number associated with the input obsKey
+Syntax: 
+	int SenNumFrObsKey((in-Long) obsKey)
+Parameters: 
+	obsKey: The observation's unique key
+Return Value:
+	The satellite number associated with the input obsKey (senNum = -1 if obsKey doesn't exist)
+=======================================================================================
+ 59. ObsGetSelected
+Purpose:
+	 Retrieves only obs that match the selection criteria
+Syntax: 
+	void ObsGetSelected((in-Double[128]) xa_selob, (in-Integer) order, (out-Integer) numMatchedObss, (out-Long[*]) obsKeys)
+Parameters: 
+	xa_selob: Obs secletion criteria (see XA_SELOB_?)
+	order: Specifies the order in which the obsKeys should be returned
+	numMatchedObss: Number of obs that match the obs selection criteria
+	obsKeys: The array in which to store the matching obs' obsKey - make sure the array is big enough to store all the returning obsKeys (<= ObsGetCount())
+=======================================================================================
+
+
+

@@ -1,0 +1,786 @@
+  1. SpInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes SpProp DLL for use in the program
+	 If this function returns an error, it is recommended that the users stop the program immediately. The error occurs if the users forget to load and initialize all the prerequisite DLLs, as listed in the DLL Prerequisites section, before using this DLL. 
+Syntax: 
+	int SpInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if SpProp.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. SpGetInfo
+Purpose:
+	 Returns information about the current version of SpProp DLL. The information is placed in the string parameter you pass in
+	 The returned string provides information about the version number, build date, and the platform of the Sp DLL. 
+Syntax: 
+	void SpGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about SpProp.dll
+=======================================================================================
+  3. SpLoadFile
+Purpose:
+	 Loads SP-related parameters (SP application controls, prediction controls, numerical integration controls) from a text file
+Syntax: 
+	int SpLoadFile((in-Character[512]) spInputFile)
+Parameters: 
+	spInputFile: The name of the file containing SP-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. SpLoadFileAll
+Purpose:
+	 Loads SP-related parameters (SP application controls, prediction controls, numerical integration controls) and SP elsets from a text file
+Syntax: 
+	int SpLoadFileAll((in-Character[512]) spInputFile)
+Parameters: 
+	spInputFile: The name of the file containing SP-related parameters and SP elsets
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  5. SpSaveFile
+Purpose:
+	 Saves currently loaded SP-related parameters (SP application controls, prediction controls, integration controls) to a file
+	 The purpose of this function is to save the current SP-related settings, usually used in GUI applications, for future use.
+Syntax: 
+	int SpSaveFile((in-Character[512]) spFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	spFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  6. SpInitSat
+Purpose:
+	 Initializes an SP satellite from an SP TLE, SPVEC, or VCM
+	 Internally, when this function is called, the SpProp DLL will look into the right binary tree, based on the vector type extracted from the satKey, and search for the satKey. If found, the SpProp DLL will use the associated SP data to create an SP object for this satellite in its own binary tree. Subsequent calls to propagate this satellite will use the data in the SP object to compute the satellite's new state.
+	 
+	 The users need to call this routine only once for each satellite they want to propagate or every time the satellite data, from which it was initialized, is changed. The call needs to be placed before any calls to the SP propagate routines (SpPropMse, SpPropDs50UTC...).
+Syntax: 
+	int SpInitSat((in-Long) satKey)
+Parameters: 
+	satKey: The satellite's unique key
+Return Value:
+	0 if the satellite is successfully initialized and added to SpProp.dll's set of satellites, non-0 if there is an error
+=======================================================================================
+  7. SpInitSat_MT
+Purpose:
+	 Initializes an SP satellite from an SP TLE, SPVEC, or VCM (thread-safe)
+	 Internally, when this function is called, the SpProp DLL will look into the right binary tree, based on the vector type extracted from the satKey, and search for the satKey. If found, the SpProp DLL will use the associated SP data to create an SP object for this satellite in its own binary tree. Subsequent calls to propagate this satellite will use the data in the SP object to compute the satellite's new state.
+	 
+	 The users need to call this routine only once for each satellite they want to propagate or every time the satellite data, from which it was initialized, is changed. The call needs to be placed before any calls to the SP propagate routines (SpPropMse, SpPropDs50UTC...).
+Syntax: 
+	int SpInitSat_MT((in-Long) satKey, (in-Double[32]) xa_spParms)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_spParms: SP parameters for the initialized satellite
+Return Value:
+	0 if the satellite is successfully initialized and added to SpProp.dll's set of satellites, non-0 if there is an error
+=======================================================================================
+  8. SpRemoveSat
+Purpose:
+	 Removes a satellite, represented by the satKey, from the set of currently loaded satellites
+	 Calling this function removes all satellites from the set maintained by SpProp.dll. However, the data loaded by Vcm.dll, Tle.dll, SpVec.dll, and ExtEphem.dll is unaffected.
+	 If the users enter an invalid satKey - a non-existing satKey in memory, the function will return a non-zero value indicating an error.
+Syntax: 
+	int SpRemoveSat((in-Long) satKey)
+Parameters: 
+	satKey: The unique key of the satellite to be removed
+Return Value:
+	0 if the satellite is removed successfully, non-0 if there is an error
+=======================================================================================
+  9. SpRemoveAllSats
+Purpose:
+	 Removes all currently loaded satellites from memory
+	 Calling this function removes all satellites from the set maintained by SpProp.dll. However, the data loaded by Vcm.dll, Tle.dll, SpVec.dll, and ExtEphem.dll is unaffected.
+	 The function returns zero if all the satellites were removed successfully from the SpProp DLL's binary tree.
+Syntax: 
+	int SpRemoveAllSats()
+Parameters: 
+	None
+Return Value:
+	0 if all satellites are removed successfully from memory, non-0 if there is an error
+=======================================================================================
+ 10. SpGetCount
+Purpose:
+	 Returns the number of SP objects currently created. 
+Syntax: 
+	int SpGetCount()
+Parameters: 
+	None
+Return Value:
+	The number of SP objects currently created.
+=======================================================================================
+ 11. SpReset
+Purpose:
+	 Removes all SP-related data from memory (Geo models, Flux records, JPL, DCA, etc.)
+Syntax: 
+	void SpReset()
+Parameters: 
+	None
+=======================================================================================
+ 12. SpGetApCtrl
+Purpose:
+	 Retrieves the value of an SP application control parameter
+	 
+	 The table below shows the values for the xf_SpApp parameter:
+	 
+	 table
+	 
+	 Index
+	 Index Interpretation
+	 
+	 1 Geopotential directory path
+	 2 Buffer size
+	 3 Run mode
+	 4 Save partials data
+	 5 Specter compatibility mode
+	 6 Consider parameter
+	 7 Decay altitude
+	 8 Output coordinate system
+	 9 Additional VCM options
+	 
+Syntax: 
+	void SpGetApCtrl((in-Integer) xf_SpApp, (out-Character[512]) valueStr)
+Parameters: 
+	xf_SpApp: Predefined value specifying which application control parameter to retrieve
+	valueStr: A string to hold the retrieved application control parameter
+=======================================================================================
+ 13. SpGetApCtrlAll
+Purpose:
+	 Retrieves all SP application control parameters with a single function call
+Syntax: 
+	void SpGetApCtrlAll((out-Character[512]) geoDir, (out-Integer) bufSize, (out-Integer) runMode, (out-Integer) savePartials, (out-Integer) isSpectr, (out-Double) consider, (out-Integer) decayAlt, (out-Integer) outCoord)
+Parameters: 
+	geoDir: Geopotential directory path
+	bufSize: Buffer size [5000]
+	runMode: Run mode: 0=performance priority, [1]=memory priority
+	savePartials: Propagate covariance matrix: 0=don't propagate, 1=propagate covariance matrix (if VCM has it)
+	isSpectr: Spectr mode: 0=not compatible, 1=SPECTR compatible
+	consider: Consider parameter (set it to 12 to match operational system)
+	decayAlt: Decay altitude (km) [10]
+	outCoord: Ouput cooridnate system: [0]=TEME of Date, 1=TEME of Epoch, 2=MEME of J2K
+=======================================================================================
+ 14. SpSetApCtrl
+Purpose:
+	 Sets an SP application control parameter
+	 See SpGetApCtrl for a list of the values for the xf_SpApp parameter.
+Syntax: 
+	void SpSetApCtrl((in-Integer) xf_SpApp, (in-Character[512]) valueStr)
+Parameters: 
+	xf_SpApp: Predefined value specifying which application control parameter to set
+	valueStr: The new value of the specified parameter, expressed as a string
+=======================================================================================
+ 15. SpSetApCtrlAll
+Purpose:
+	 Sets all SP application control parameters with a single function call
+Syntax: 
+	void SpSetApCtrlAll((in-Character[512]) geoDir, (in-Integer) bufSize, (in-Integer) runMode, (in-Integer) savePartials, (in-Integer) isSpectr, (in-Double) consider, (in-Integer) decayAlt, (in-Integer) outCoord)
+Parameters: 
+	geoDir: Geopotential directory path
+	bufSize: Buffer size [5000]
+	runMode: Run mode: 0=performance priority, [1]=memory priority
+	savePartials: Propagate covariance matrix: 0=don't propagate, 1=propagate covariance matrix (if VCM has it)
+	isSpectr: Spectr mode: 0=not compatible, 1=SPECTR compatible
+	consider: Consider parameter (set it to 12 to match operational system)
+	decayAlt: Decay altitude (km) [10]
+	outCoord: Ouput cooridnate system: [0]=TEME of Date, 1=TEME of Epoch, 2=MEME of J2K
+=======================================================================================
+ 16. SpGet4P
+Purpose:
+	 Retrieves the value of a numerical integration control parameter
+	 
+	 The table below shows the values for xf_4P parameter:
+	 
+	 table
+	 
+	 Index
+	 Index Interpretation
+	 
+	 1   Geopotential model to use
+	 2   Earth gravity pertubations flag
+	 3   Drag pertubations flag 
+	 4   Radiation pressure pertubations flag
+	 5   Lunar/Solar pertubations flag
+	 6   F10 value
+	 7   F10 average value
+	 8   Ap value
+	 9   Geopotential truncation order/degree/zonals
+	 10  Corrector step convergence criterion; exponent of 1/10; default = 10
+	 11  Outgassing pertubations flag
+	 12  Solid earth ocean tide pertubations flag
+	 13  Input vector coordinate system
+	 14  Nutation terms
+	 15  Recompute pertubations at each corrector step
+	 16  Variable of intergration control
+	 17  Variable step size control
+	 18  Initial step size
+	 21  DCA file name
+	 22  Solar flux file name
+	 23  Geopotential file name
+	 24  JPL file name
+	 25  JPL start time
+	 26  JPL stop time
+	 
+	 See the SpProp.pdf document under the librarydocuments folder, section 7.3
+	 "Numerical Integration Control (4P-Card)".  This document has a description
+	 of each column for a 4P card.  For an example, see files in the 
+	 Verify/SpProp/Execution/input folder, such as sp_sat1.inp and look at the 
+	 line that ends with "4P".  
+Syntax: 
+	void SpGet4P((in-Integer) xf_4P, (out-Character[512]) valueStr)
+Parameters: 
+	xf_4P: Predefined value specifying which application control parameter to retrieve
+	valueStr: A string to hold the retrieved application control parameter
+=======================================================================================
+ 17. SpSet4P
+Purpose:
+	 Sets the value of a numerical integration control parameter
+	 See SpGet4P for a list of the values for the xf_4P parameter.
+	 For flux, dca, and jpl file settings, the actual file loading happens when the first SpSatInit() is called. 
+	 If the user needs to load these files instantly, please call the SpLoadFile() instead
+	 See the SpProp.pdf document under the librarydocuments folder, section 7.3
+	 "Numerical Integration Control (4P-Card)".  This document has a description
+	 of each column for a 4P card.  For an example, see files in the 
+	 Verify/SpProp/Execution/input folder, such as sp_sat1.inp and look at the 
+	 line that ends with "4P".  
+Syntax: 
+	void SpSet4P((in-Integer) xf_4P, (in-Character[512]) valueStr)
+Parameters: 
+	xf_4P: Predefined value specifying which application control parameter to set
+	valueStr: The new value of the specified parameter, expressed as a string
+=======================================================================================
+ 18. SpGetPredCtrl
+Purpose:
+	 Retrieves prediction control parameters
+Syntax: 
+	void SpGetPredCtrl((out-Integer) startFrEpoch, (out-Integer) stopFrEpoch, (out-Double) startTime, (out-Double) stopTime, (out-Double) interval)
+Parameters: 
+	startFrEpoch: Start time flag: 0=in days since 1950 UTC, 1=in minutes since epoch
+	stopFrEpoch: Stop time flag : 0=in days since 1950 UTC, 1=in minutes since epoch
+	startTime: Start time value
+	stopTime: Stop time value
+	interval: Step size (min)
+=======================================================================================
+ 19. SpSetPredCtrl
+Purpose:
+	 Sets prediction control parameters
+Syntax: 
+	void SpSetPredCtrl((in-Integer) startFrEpoch, (in-Integer) stopFrEpoch, (in-Double) startTime, (in-Double) stopTime, (in-Double) interval)
+Parameters: 
+	startFrEpoch: Start time flag: 0=in days since 1950 UTC, 1=in minutes since epoch
+	stopFrEpoch: Stop time flag : 0=in days since 1950 UTC, 1=in minutes since epoch
+	startTime: Start time value
+	stopTime: Stop time value
+	interval: Step size (min)
+=======================================================================================
+ 20. SpGetSatData
+Purpose:
+	 Retrieves the value of a field of an SP satellite
+	 
+	 The table below shows the values for the xf_SpSat parameter:
+	 
+	 table
+	 
+	 Index
+	 Index Interpretation
+	 
+	 1  Satellite number I5
+	 2  Satellite's epoch time in days since 1950, UTC 
+	 3  Satellite's epoch time in days since 1950, TAI
+	 4  Mu value 
+	 5  Covariance Matrix flag
+	 6  Integration mode
+	 7  Nutation terms
+	 8  Specter compatibility mode
+	 
+Syntax: 
+	int SpGetSatData((in-Long) satKey, (in-Integer) xf_SpSat, (out-Character[512]) valueStr)
+Parameters: 
+	satKey: The satellite's unique key
+	xf_SpSat: Predefined number specifying which field to retrieve
+	valueStr: A string containing the value of the specified field
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 21. SpGetSatDataAll
+Purpose:
+	 Retrieves all fields of an SP satellite with a single function call
+Syntax: 
+	int SpGetSatDataAll((in-Long) satKey, (out-Integer) satNum, (out-Double) epochDs50UTC, (out-Double) epochDs50TAI, (out-Double) mu, (out-Integer) hasCovMtx, (out-Integer) integMode, (out-Integer) nTerms, (out-Integer) isSpectr)
+Parameters: 
+	satKey: The satellite's unique key
+	satNum: Satellite number
+	epochDs50UTC: Satellite's epoch time in days since 1950 UTC
+	epochDs50TAI: Satellite's epoch time in days since 1950 TAI
+	mu: Mu value from Satellite's geopotential model
+	hasCovMtx: 0=This satellite doesn't have covariance matrix, 1=This satellite has covariance matrix
+	integMode: Partials computation mode: 0=no partials, 1=numerical, 2=semi-analytic
+	nTerms: Number of nutation terms
+	isSpectr: Spectr compatible mode: 0=not compatible, 1=compatible
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 22. SpPropMse
+Purpose:
+	 Propagates a satellite, represented by the satKey, to the time expressed in minutes since the 
+	 satellite's epoch time
+Syntax: 
+	int SpPropMse((in-Long) satKey, (in-Double) mse, (out-Double[5]) xa_timeTypes, (out-Integer) revNum, (out-Double[3]) posJ2K, (out-Double[3]) velJ2K)
+Parameters: 
+	satKey: The satellite's unique key
+	mse: The requested time in minutes since the satellite's epoch time
+	xa_timeTypes: The output array that stores different time types (see XA_TIMETYPES_?)
+	revNum: The resulting revolution number
+	posJ2K: The resulting position vector (km) in MEME of J2K
+	velJ2K: The resulting velocity vector (km/s) in MEME of J2K
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 23. SpPropDs50UTC
+Purpose:
+	 Propagates a satellite, represented by the satKey, to the time expressed in days since 1950, UTC. 
+Syntax: 
+	int SpPropDs50UTC((in-Long) satKey, (in-Double) ds50UTC, (out-Double[5]) xa_timeTypes, (out-Integer) revNum, (out-Double[3]) posJ2K, (out-Double[3]) velJ2K)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The requested time in days since 1950 UTC
+	xa_timeTypes: The output array that stores different time types (see XA_TIMETYPES_?)
+	revNum: The resulting revolution number
+	posJ2K: The resuling position vector (km) in MEME of J2K
+	velJ2K: The resulting velocity vector (km/s) in MEME of J2K
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 24. SpPropDs50UtcLLH
+Purpose:
+	 Propagates a satellite, represented by the satKey, to the time expressed in days since 1950, UTC. 
+	 It only returns the latitude, longitude, and height at that time in coordinate system of Date
+	 It is the users' responsibility to decide what to do with the returned value. For example, if the users want to check for decay or low altitude, they can put that logic into their own code.
+	 
+	 This function is built especially for application that plots ground trace.
+Syntax: 
+	int SpPropDs50UtcLLH((in-Long) satKey, (in-Double) ds50UTC, (out-Double[3]) llh)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The requested time in days since 1950 UTC
+	llh: The resulting array: 1=geodetic latitude (deg), 2=geodetic longitude (deg), 3=height (km)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 25. SpPropDs50UtcPos
+Purpose:
+	 Propagates a satellite, represented by the satKey, to the time expressed in days since 1950, UTC. 
+	 It only returns the satellite's ECI position in TEME of DATE
+	 It is the users' responsibility to decide what to do with the returned value. For example, if the users want to check for decay or low altitude, they can put that logic into their own code.
+	 
+	 This function is built especially for application that plots satellites' positions in 3D.
+Syntax: 
+	int SpPropDs50UtcPos((in-Long) satKey, (in-Double) ds50UTC, (out-Double[3]) pos)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The requested time in days since 1950 UTC
+	pos: The resulting ECI position (km) in TEME of Date
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 26. SpPropAll
+Purpose:
+	 Propagates a satellite, represented by the satKey, to the time expressed in either minutes since epoch or days since 1950, UTC. 
+	 
+	 All propagation data is returned by this function.
+Syntax: 
+	int SpPropAll((in-Long) satKey, (in-Integer) timeType, (in-Double) timeIn, (in-Integer) covType, (out-Double[128]) xa_spOut)
+Parameters: 
+	satKey: The unique key of the satellite to propagate.
+	timeType: The propagation time type: 0 = minutes since epoch, 1 = days since 1950, UTC
+	timeIn: The time to propagate to, expressed in either minutes since epoch or days since 1950, UTC.
+	covType: Covariance matrix type, if available: 0=don't propagate, 1=UVW, 2=ECI_DATE, 3=EQNX_DATE, 12=ECI_J2K, 13=EQNX_J2K
+	xa_spOut: The array that stores all Sp propagation data (see XA_SPOUT_?)
+Return Value:
+	0 if the propagation is successful, 2 on error.
+=======================================================================================
+ 27. SpGetStateDs50UTC
+Purpose:
+	 Propagates a satellite, represented by the satKey, to the time expressed in days since 1950, UTC. 
+	 It only returns the position and velocity in TEME of Date
+Syntax: 
+	int SpGetStateDs50UTC((in-Long) satKey, (in-Double) ds50UTC, (out-Double[3]) posDate, (out-Double[3]) velDate)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The requested time in days since 1950 UTC
+	posDate: The resulting ECI position (km) in TEME of Date
+	velDate: The resulting ECI velocity (km/s) in TEME of Date
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 28. SpSetStateDs50UTC
+Purpose:
+	 Reepochs the state of an existing SP object associated with the satKey. 
+	 Proper initialization is handled internally so no need to call SpSatInit() afterward 
+Syntax: 
+	int SpSetStateDs50UTC((in-Long) satKey, (in-Double) ds50UTC, (in-Double[3]) posDate, (in-Double[3]) velDate)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The requested new epoch time in days since 1950 UTC
+	posDate: The initial ECI position (km) in TEME of Date
+	velDate: The initial ECI velocity (km/s) in TEME of Date
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 29. SpSetAndProp
+Purpose:
+	 Updates an SP object associated with the satKey with the new input data stored in setDataArr. 
+	 Then propagates the updated SP object to the requested time propTimeDs50UTC. 
+	 Resulting propagated data will be stored in propDataArr.
+Syntax: 
+	int SpSetAndProp((in-Long) satKey, (in-Double[128]) setDataArr, (in-Double) propTimeDs50UTC, (out-Double[128]) propDataArr)
+Parameters: 
+	satKey: The satellite's unique key
+	setDataArr: 0-2: posECI (km), 3-5: velECI (km/s), 6: bTerm (m2/kg), 7: agom (m2/kg)
+	propTimeDs50UTC: The requested time in days since 1950 UTC
+	propDataArr: 0-2: out posECI (km), 3-5: out velECI (km/s), 6-127: NA
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 30. SpGetPropOut
+Purpose:
+	 This function is reserved for future use. The purpose is to return propagator output data based on user special requests that have not yet been determined
+	 Use this function immediately after the call to SpPropMse or SpPropDs50UTC. 
+Syntax: 
+	int SpGetPropOut((in-Long) satKey, (in-Integer) index, (out-Double[*]) destArr)
+Parameters: 
+	satKey: The satellite's unique key
+	index: Index specified ouput data
+	destArr: The resulting array
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 31. SpGetCovMtx
+Purpose:
+	 Returns the covariance matrix of a satellite
+	 Use this function immediately after the call to SpPropMse or SpPropDs50UTC. 
+Syntax: 
+	int SpGetCovMtx((in-Long) satKey, (in-Integer) covType, (out-Double[6, 6]) covMtx)
+Parameters: 
+	satKey: The satellite's unique key
+	covType: Covariance matrix type: 1=UVW, 2=ECI_DATE, 3=EQNX_DATE, 12=ECI_J2K, 13=EQNX_J2K
+	covMtx: Resulting covariance matrix 6x6
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 32. SpCompCovSigma
+Purpose:
+	 Computes the covariance sigma from the input covariance matrix
+Syntax: 
+	void SpCompCovSigma((in-Double[6, 6]) covMtx, (out-Double[6]) covSigma)
+Parameters: 
+	covMtx: Input covariance matrix
+	covSigma: Resulting covariance sigma
+=======================================================================================
+ 33. SpSet4pAll
+Purpose:
+	 Sets all numerical integration control parameters with a single function call
+	 See the SpProp.pdf document under the librarydocuments folder, section 7.3
+	 "Numerical Integration Control (4P-Card)".  This document has a description
+	 of each column for a 4P card.  For an example, see files in the 
+	 Verify/SpProp/Execution/input folder, such as sp_sat1.inp and look at the 
+	 line that ends with "4P".  
+Syntax: 
+	void SpSet4pAll((in-Integer) geoIdx, (in-Integer) bulgePert, (in-Integer) dragPert, (in-Integer) radPresPert, (in-Integer) lunSolPert, (in-Integer) f10, (in-Integer) f10Avg, (in-Integer) ap, (in-Integer) trunc, (in-Integer) incr, (in-Integer) ogPert, (in-Integer) tidePert, (in-Integer) inCoord, (in-Integer) nTerms, (in-Integer) reEval, (in-Integer) integStepMode, (in-Integer) stepSizeMethod, (in-Double) initStepSize, (in-Character[512]) dcaFile, (in-Character[512]) fluxFile, (in-Character[512]) geoFile, (in-Character[512]) jplFile, (in-Character[512]) jplStart, (in-Character[512]) jplStop)
+Parameters: 
+	geoIdx: Geopotential model
+	bulgePert: Earth gravity flag
+	dragPert: Drag pertubation flag
+	radPresPert: Radiation pressure pertubation flag
+	lunSolPert: Lunar/solar pertubation flag
+	f10: F10 value
+	f10Avg: F10 average value
+	ap: Ap
+	trunc: Geo truncation order/degree/zonals
+	incr: Corrector step convergenece criterion
+	ogPert: Outgassing pertubation flag
+	tidePert: Solid earth + ocean tide pertubation flag
+	inCoord: Input vector coordinate system
+	nTerms: Nutation terms
+	reEval: Recompute pertubations at each corrector step
+	integStepMode: Variable of integration control
+	stepSizeMethod: Variable step size control
+	initStepSize: Initial step size
+	dcaFile: DCA file name
+	fluxFile: Flux file name
+	geoFile: Geo file name
+	jplFile: JPL file name
+	jplStart: JPL start time
+	jplStop: JPL stop time
+=======================================================================================
+ 34. SpGet4pAll
+Purpose:
+	 Retrieves all numerical integration control parameters with a single function call
+	 See the SpProp.pdf document under the librarydocuments folder, section 7.3
+	 "Numerical Integration Control (4P-Card)".  This document has a description
+	 of each column for a 4P card.  For an example, see files in the 
+	 Verify/SpProp/Execution/input folder, such as sp_sat1.inp and look at the 
+	 line that ends with "4P".  
+Syntax: 
+	void SpGet4pAll((out-Integer) geoIdx, (out-Integer) bulgePert, (out-Integer) dragPert, (out-Integer) radPresPert, (out-Integer) lunSolPert, (out-Integer) f10, (out-Integer) f10Avg, (out-Integer) ap, (out-Integer) trunc, (out-Integer) incr, (out-Integer) ogPert, (out-Integer) tidePert, (out-Integer) inCoord, (out-Integer) nTerms, (out-Integer) reEval, (out-Integer) integStepMode, (out-Integer) stepSizeMethod, (out-Double) initStepSize, (out-Character[512]) dcaFile, (out-Character[512]) fluxFile, (out-Character[512]) geoFile, (out-Character[512]) jplFile, (out-Character[512]) jplStart, (out-Character[512]) jplStop)
+Parameters: 
+	geoIdx: Geopotential model
+	bulgePert: Earth gravity flag
+	dragPert: Drag pertubation flag
+	radPresPert: Radiation pressure pertubation flag
+	lunSolPert: Lunar/solar pertubation flag
+	f10: F10 value
+	f10Avg: F10 average value
+	ap: Ap
+	trunc: Geo truncation order/degree/zonals
+	incr: Corrector step convergenece criterion
+	ogPert: Outgassing pertubation flag
+	tidePert: Solid earth + ocean tide pertubation flag
+	inCoord: Input vector coordinate system
+	nTerms: Nutation terms
+	reEval: Recompute pertubations at each corrector step
+	integStepMode: Variable of integration control
+	stepSizeMethod: Variable step size control
+	initStepSize: Initial step size
+	dcaFile: DCA file name
+	fluxFile: Flux file name
+	geoFile: Geo file name
+	jplFile: JPL file name
+	jplStart: JPL start time
+	jplStop: JPL stop time
+=======================================================================================
+ 35. SpSet4PCard
+Purpose:
+	 Read the integration control settings from a 4P-Card.
+	 See the SpProp.pdf document under the librarydocuments folder, section 7.3
+	 "Numerical Integration Control (4P-Card)".  This document has a description
+	 of each column for a 4P card.  For an example, see files in the 
+	 Verify/SpProp/Execution/input folder, such as sp_sat1.inp and look at the 
+	 line that ends with "4P".  
+Syntax: 
+	int SpSet4PCard((in-Character[512]) card4P)
+Parameters: 
+	card4P: The input 4P card
+Return Value:
+	0 if the input 4P card is read successfully, non-0 if there is an error
+=======================================================================================
+ 36. SpGet4PCard
+Purpose:
+	 Builds and returns the integration control card (4P-Card) from the current settings
+	 See the SpProp.pdf document under the librarydocuments folder, section 7.3
+	 "Numerical Integration Control (4P-Card)".  This document has a description
+	 of each column for a 4P card.  For an example, see files in the 
+	 Verify/SpProp/Execution/input folder, such as sp_sat1.inp and look at the 
+	 line that ends with "4P".  
+Syntax: 
+	void SpGet4PCard((out-Character[512]) card4P)
+Parameters: 
+	card4P: A string to hold the retrieved 4P card
+=======================================================================================
+ 37. SpAddFluxRec
+Purpose:
+	 Adds one solar flux record to memory. This API can be used to avoid SpLoadFile's file I/O      
+Syntax: 
+	int SpAddFluxRec((in-Double) refDs50UTC, (in-Double) f10, (in-Double) f10Avg, (in-Double[8]) ap)
+Parameters: 
+	refDs50UTC: Time tag of this record (DS50; UTC)
+	f10: F10 value
+	f10Avg: F10avg value
+	ap: Array of 3-hourly values of Ap
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 38. SpGetEphemTimes
+Purpose:
+	 Returns the times, in days since 1950 UTC, of ephemeris points stored in SP buffer that meet the requirement as specified in the minStepSize
+	 This function is used to retrieve times in which SP propagator stored satellite's state vectors in memory (natural integration step size).
+	 An error will occur if the actualEphPts reaches the maxEphPts. In this case, the function will return all ephemereris times up to the time when that maxEphPts is reached.
+Syntax: 
+	int SpGetEphemTimes((in-Long) satKey, (in-Integer) maxEphPts, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) minStepSize, (out-Integer) actualEphPts, (out-Double[*]) ds50UTCArr)
+Parameters: 
+	satKey: The satellite's unique key
+	maxEphPts: Maximum number of possible ephemeris points that the function won't go over. That means actualEphPts can't be greater than maxEphPts even though the time span may have more points than that
+	startDs50UTC: Start time in days since 1950 UTC
+	stopDs50UTC: Stop time in days since 1950 UTC
+	minStepSize: Option to thin ephem points. Only pick ephem point when its next ephem point is older than the specified minStepSize (minutes). Set to 0 to get all ephem points (SP natural integration step size)
+	actualEphPts: Actual number of ephem points that meet the requirements
+	ds50UTCArr: The resulting time array, in days since 1950 UTC, of all ephem points that meet the requirements
+Return Value:
+	0 if the function successfully returns all the ephemeris times of the specified start/stop time span, non-0 if there is an error. Also if
+=======================================================================================
+ 39. SpGenEphems
+Purpose:
+	 Generates ephemerides for the input satellite, represented by its satKey, for the specified time span and step size
+	 Notes: if arrSize isn't big enough to store all the ephemeris points, the function will exit when the ephemArr reaches
+	 that many points (arrSize) and the errCode is set to IDX_ERR_WARN
+Syntax: 
+	int SpGenEphems((in-Long) satKey, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSize, (in-Integer) sp_ephem, (in-Integer) arrSize, (out-Double[*, 7]) ephemArr, (out-Integer) genEphemPts)
+Parameters: 
+	satKey: The unique key of the satellite to generate ephemerides.
+	startDs50UTC: Start time expressed in days since 1950, UTC.
+	stopDs50UTC: End time expressed in days since 1950, UTC.
+	stepSize: Step size in minutes, set to 0 if want to use SP natural integration step size
+	sp_ephem: Output ephemeris type: 1=ECI, 2=J2K.
+	arrSize: Size of input ephemArr
+	ephemArr: Output ephemerides - 0: time in days since 1950 UTC, 1-3: pos (km), 4-6: vel (km/sec)
+	genEphemPts: Actual number of ephemeris points generated (always &le; arrSize)
+Return Value:
+	0 if the propagation is successful, non-0 if there is an error (see GP_ERR_?).
+=======================================================================================
+ 40. SpGenEphemsCov
+Purpose:
+	 This function is similar to SpGenEphems but also returns covariance matrix data
+	 Notes: Make sure to turn on the "save partials" flag so that covariance matrix data can be generated
+Syntax: 
+	int SpGenEphemsCov((in-Long) satKey, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSize, (in-Integer) sp_ephem, (in-Integer) covType, (in-Integer) arrSize, (out-Double[*, 28]) ephemArr, (out-Integer) genEphemPts)
+Parameters: 
+	satKey: The unique key of the satellite to generate ephemerides.
+	startDs50UTC: Start time expressed in days since 1950, UTC.
+	stopDs50UTC: End time expressed in days since 1950, UTC.
+	stepSize: Step size in minutes, set to 0 if want to use SP natural integration step size
+	sp_ephem: Output ephemeris type: 1=ECI, 2=J2K.
+	covType: Covariance matrix type, if available: 0=don't propagate,  1=UVW, 2=ECI_DATE, 3=EQNX_DATE, 12=ECI_J2K, 13=EQNX_J2K
+	arrSize: Size of input ephemArr
+	ephemArr: Output ephemerides - 0: time in days since 1950 UTC, 1-3: pos (km), 4-6: vel (km/sec), 7-27: 21-elements lower triagular covariance matrix
+	genEphemPts: Actual number of ephemeris points generated (always &le; arrSize)
+Return Value:
+	0 if the propagation is successful, non-0 if there is an error (see GP_ERR_?).
+=======================================================================================
+ 41. SpGenEphemsVcm_OS
+Purpose:
+	 Generates ephemerides for the input vcm (in string format) for the specified time span and step size
+	 Notes: if arrSize isn't big enough to store all the ephemeris points, the function will exit when the ephemArr reaches
+	 that many points (arrSize) and the errCode is set to IDX_ERR_WARN
+Syntax: 
+	int SpGenEphemsVcm_OS((in-Character[4000]) vcmString, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSize, (in-Integer) sp_ephem, (in-Integer) arrSize, (out-Double[*, 7]) ephemArr, (out-Integer) genEphemPts)
+Parameters: 
+	vcmString: 1-line or concatenated string representation of the VCM
+	startDs50UTC: Start time expressed in days since 1950, UTC.
+	stopDs50UTC: End time expressed in days since 1950, UTC.
+	stepSize: Step size in minutes, set to 0 if want to use SP natural integration step size
+	sp_ephem: Output ephemeris type: 1=ECI, 2=J2K.
+	arrSize: Size of input ephemArr
+	ephemArr: Output ephemerides - 0: time in days since 1950 UTC, 1-3: pos (km), 4-6: vel (km/sec)
+	genEphemPts: Actual number of ephemeris points generated (always &le; arrSize)
+Return Value:
+	0 if the propagation is successful, non-0 if there is an error (see GP_ERR_?).
+=======================================================================================
+ 42. SpGenEphemsVcmCov_OS
+Purpose:
+	 This function is similar to SpGenEphemsVcm_OS but also returns covariance matrix data
+Syntax: 
+	int SpGenEphemsVcmCov_OS((in-Character[4000]) vcmString, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSize, (in-Integer) sp_ephem, (in-Integer) covType, (in-Integer) arrSize, (out-Double[*, 28]) ephemArr, (out-Integer) genEphemPts)
+Parameters: 
+	vcmString: 1-line or concatenated string representation of the VCM
+	startDs50UTC: Start time expressed in days since 1950, UTC.
+	stopDs50UTC: End time expressed in days since 1950, UTC.
+	stepSize: Step size in minutes, set to 0 if want to use SP natural integration step size
+	sp_ephem: Output ephemeris type: 1=ECI, 2=J2K.
+	covType: Covariance matrix type, if available:  1=UVW, 2=ECI_DATE, 3=EQNX_DATE, 12=ECI_J2K, 13=EQNX_J2K
+	arrSize: Size of input ephemArr
+	ephemArr: Output ephemerides - 0: time in days since 1950 UTC, 1-3: pos (km), 4-6: vel (km/sec), 7-27: 21-elements lower triagular covariance matrix
+	genEphemPts: Actual number of ephemeris points generated (always &le; arrSize)
+Return Value:
+	0 if the propagation is successful, non-0 if there is an error (see GP_ERR_?).
+=======================================================================================
+ 43. SpPropAllSats
+Purpose:
+	 Propagates all input satellites, represented by their satKeys, to the time expressed in days since 1950, UTC. 
+Syntax: 
+	int SpPropAllSats((in-Long[*]) satKeys, (in-Integer) numOfSats, (in-Double) ds50UTC, (out-Double[*, 6]) ephemArr)
+Parameters: 
+	satKeys: The satellite keys of all input satellites
+	numOfSats: The total number of satellites
+	ds50UTC: The time to propagate all satelllites to, expressed in days since 1950, UTC.
+	ephemArr: 0-2: pos (km), 3-5: vel (km/sec) - ECI TEME of Date
+Return Value:
+	0 if the propagation is successful, non-0 if there is an error.
+=======================================================================================
+ 44. SpPropAllExt
+Purpose:
+	 Propagates a satellite, represented by the satKey, to the time expressed in either minutes since epoch or days since 1950, UTC. 
+	 
+	 All propagation data is returned by this function.
+Syntax: 
+	int SpPropAllExt((in-Long) satKey, (in-Integer) timeType, (in-Double) timeIn, (in-Integer) spCoord, (in-Integer) xf_CovMtx, (in-Integer) stmType, (out-Double[128]) xa_spExt)
+Parameters: 
+	satKey: The unique key of the satellite to propagate.
+	timeType: The propagation time type: 0 = minutes since epoch, 1 = days since 1950, UTC
+	timeIn: The time to propagate to, expressed in either minutes since epoch or days since 1950, UTC.
+	spCoord: Output coordinate systems for pos/vel/acc (see SPCOORD_?)
+	xf_CovMtx: Covariance matrix type (see XF_COVMTX_?)
+	stmType: State transition matrix type (see STMTYPE_?)
+	xa_spExt: The array that stores all Sp propagation data (see XA_SPEXT_?)
+Return Value:
+	0 if the propagation is successful, 2 on error.
+=======================================================================================
+ 45. SpLoadFluxFile
+Purpose:
+	 Loads solar flux file (J70MOD or JBH09) for use in AtmspDensity() 
+Syntax: 
+	int SpLoadFluxFile((in-Character[512]) fluxFile)
+Parameters: 
+	fluxFile: The name of the file containing SP-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+ 46. SpLoadDCAFile
+Purpose:
+	 Loads DCA temperature coefficient file (DCA1/HASDM1 or DCA2/HASDM2) for use in AtmspDensity()
+Syntax: 
+	int SpLoadDCAFile((in-Character[512]) dcaFile)
+Parameters: 
+	dcaFile: The name of the file containing SP-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+ 47. AtmspDensity
+Purpose:
+	 Computes atmospheric density using the input time/location/drag model
+Syntax: 
+	void AtmspDensity((in-Double) ds50UTC, (in-Double[3]) llh, (in-Integer) drgMdl, (out-Double) rho, (out-Integer) errCode)
+Parameters: 
+	ds50UTC: Input time, expressed in days since 1950, UTC.
+	llh: Input array: latitude (deg)/longitude (deg)/height (km-above geoid)
+	drgMdl: Drag perturbations model (see DRGMDL_x for available options
+	rho: Atmospheric density (kg / m**3)
+	errCode: Error code - 0 if successful, non-0 if there is an error
+=======================================================================================
+ 48. GetDcaRec
+Purpose:
+	 Gets DCA Record at specified time
+Syntax: 
+	void GetDcaRec((in-Double) ds50UTC, (out-Double) ds50UTCRec, (out-Double[8]) flux, (out-Double[3]) storm, (out-Double[7, 7]) ctxi, (out-Double[7, 7]) stxi, (out-Double[7, 7]) ctci, (out-Double[7, 7]) stci, (out-Integer) errCode)
+Parameters: 
+	ds50UTC: Request Time
+	ds50UTCRec: Time of the DCA record
+	flux: S10,S54,M10,M54,Y10,Y54,F10,F54 for IVER=3 JBH09 DCA
+	storm: Ap,Dst,DTC geomagnetic storm values IVER=3 JBH09 DCA
+	ctxi: Even spherical harmonic coefficients for DTX
+	stxi: Odd spherical harmonic coefficients for DTX
+	ctci: Even spherical harmonic coefficients for DTC
+	stci: Odd spherical harmonic coefficients for DTC
+	errCode: Error code - 0 if successful, non-0 if there is an error
+=======================================================================================
+ 49. SpRemoveFlux
+Purpose:
+	 Unloads the flux/JBHSGI flux
+Syntax: 
+	void SpRemoveFlux()
+Parameters: 
+	None
+=======================================================================================
+ 50. SpRemoveDCAFile
+Purpose:
+	 Unloads the DCA records
+Syntax: 
+	void SpRemoveDCAFile()
+Parameters: 
+	None
+=======================================================================================
+
+
+

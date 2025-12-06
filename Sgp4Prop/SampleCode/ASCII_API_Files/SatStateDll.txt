@@ -1,0 +1,366 @@
+  1. SatStateInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes SatState DLL for use in the program
+	 If this function returns an error, it is recommended that the users stop the program immediately. 
+	 The error occurs if the users forget to load and initialize all the prerequisite DLLs, 
+	 as listed in the DLL Prerequisite section, before using this DLL.
+Syntax: 
+	int SatStateInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if SatState.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. SatStateGetInfo
+Purpose:
+	 Returns information about the current version of SatState DLL. 
+	 The information is placed in the string parameter passed in.
+	 The returned string provides information about the version number, build date, and the platform of the SatState DLL. 
+Syntax: 
+	void SatStateGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about SatState.dll
+=======================================================================================
+  3. SatStateLoadFile
+Purpose:
+	 Loads any orbital element types (TLE's/SPVEC's/VCM's), EXTEPHEM's, and/or propagator controls from an input text file
+	 Internally, if taskMode = 1, this function calls SpProp.SpLoadFile(); 
+	 and if taskMode = 2, this function calls Tle.TleLoadFile(), SpVec.SpVecLoadFile(), Vcm.VcmLoadFile(), ExtEphem.ExtEphLoadFile(); 
+	 if taskMode = 3, both tasks (1 and 2) are executed.
+Syntax: 
+	int SatStateLoadFile((in-Character[512]) inputFile, (in-Integer) xf_Task)
+Parameters: 
+	inputFile: The name of the input file to load
+	xf_Task: Specified task mode: 1=load SP control parameters, 2=load elsets only, 3=both 1 + 2
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. SatStateSaveFile
+Purpose:
+	 Saves currently loaded orbital element types (TLE's/SPVEC's/VCM's), EXTEPHEM's, and/or propagator controls to a file
+	 The purpose of this function is to save the current SatState-related settings, usually used in GUI applications, for future use.
+	 
+	 Internally, if taskMode = 1, this function calls SpProp.SpSaveFile(); 
+	 and if taskMode = 2, this function calls Tle.TleSaveFile(), SpVec.SpVecSavedFile(), Vcm.VcmSaveFile(), ExtEphem.ExtEphSaveFile(); 
+	 if taskMode = 3, both tasks (1 and 2) are executed.
+Syntax: 
+	int SatStateSaveFile((in-Character[512]) outFile, (in-Integer) saveMode, (in-Integer) saveForm, (in-Integer) xf_Task)
+Parameters: 
+	outFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+	xf_Task: Specified task mode: 1=Only save propagator control parameters, 2=Only save orbital elements/external ephemeris data,	3=Save both 1 + 2
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  5. SatStateRemoveSat
+Purpose:
+	 Removes a satellite from the appropriate elset DLL's set of loaded satellites. 
+	 The function will automatically choose the proper set of elsets from which to remove the satellite. 
+	 The choices are: Tle.dll, SpVec.dll, Vcm.dll, or ExtEphem.dll   
+	 If the users enter an invalid satKey (a satKey that does not exist in memory), the function will return a non-zero value indicating an error.
+Syntax: 
+	int SatStateRemoveSat((in-Long) satKey)
+Parameters: 
+	satKey: The unique key of the satellite to be removed
+Return Value:
+	0 if the satellite is successfully removed from memory, non-0 if there is an error
+=======================================================================================
+  6. SatStateRemoveSatAll
+Purpose:
+	 Removes a satellite from the appropriate sets of loaded satellites (elset dll and propagator dll). 
+	 The function will remove the satellite from the elset DLL's sets as in SatStateRemoveSat() and 
+	 from the appropriate propagator's set of initialized satellites if it exists there.
+Syntax: 
+	int SatStateRemoveSatAll((in-Long) satKey)
+Parameters: 
+	satKey: The unique key of the satellite to be removed
+Return Value:
+	0 if the satellite is successfully removed from memory, non-0 if there is an error
+=======================================================================================
+  7. SatStateRemoveAllSats
+Purpose:
+	 Removes all satellites from all of the loaded data sets. 
+	 It will remove all satellites from the following sets: Tle, SpVec, Vcm, ExtEphem, Sgp4Prop, and SpProp
+Syntax: 
+	int SatStateRemoveAllSats()
+Parameters: 
+	None
+Return Value:
+	0 if all of the data sets are cleared successfully, non-0 if there is an error
+=======================================================================================
+  8. SatStateReset
+Purpose:
+	 Resets propagator settings back to their default values
+Syntax: 
+	void SatStateReset()
+Parameters: 
+	None
+=======================================================================================
+  9. SatStateGetCount
+Purpose:
+	 Returns the total number of satellites (TLE's, SPVEC's, VCM's, and EXTEPHEM's) currently loaded in memory
+	 See SatStateGetLoaded for example.
+	 This function is useful for dynamically allocating memory for the array that is passed to the function SatStateGetLoaded.
+Syntax: 
+	int SatStateGetCount()
+Parameters: 
+	None
+Return Value:
+	The total number of currently loaded satellites
+=======================================================================================
+ 10. SatStateGetLoaded
+Purpose:
+	 Retrieves all of the currently loaded satKeys. 
+	 These satKeys can be used to access the internal data for the satellites.
+	 It is recommended that SatStateGetCount() is used to count how many satellites are currently loaded in memory. 
+	 The user can then use this number to dynamically allocate the satKeys array and pass it to this function.
+	 
+	 If the user prefers to pass a static array to the function, make sure it is big enough to store all the satKeys in memory.
+Syntax: 
+	void SatStateGetLoaded((in-Integer) order, (out-Long[*]) satKeys)
+Parameters: 
+	order: Specifies the order in which the satKeys should be returned:	0=ascending order, 1=descending order, 2=order in which the satKeys were loaded in memory
+	satKeys: The array in which to store the satKeys
+=======================================================================================
+ 11. SatStateNumToKey
+Purpose:
+	 Returns the first satKey that contains the specified satellite number in all sets of loaded satellites. 
+	 These sets will be searched: Tle, SpVec, Vcm, and ExtEphem.
+	 This function is useful when a satellite is used in applications that require only one record for one 
+	 satellite and the applications refer to that satellite by its satellite number. 
+	 However, the Astrodynamic Standard Shared library is only working with satKeys, this function helps to return the associated satKey of that satellite.
+Syntax: 
+	__int64 SatStateNumToKey((in-Integer) satNum)
+Parameters: 
+	satNum: The satellite number to search for
+Return Value:
+	The satKey of the matching satellite if one is found, a negative value indicating an error if not
+=======================================================================================
+ 12. SatStateGetSatDataAll
+Purpose:
+	 Retrieves the data which is common to all satellite types. 
+	 All common fields are retrieved with a single function call.
+	 The apogee height and perigee height are defined as the distance above an ellipsoid 
+	 created using the earth flattening factor from the selected geopotential model.
+	 Note:  When using SP elsets (TLE type 6, SPVEC, or VCM), calling SatStateGetSatDataAll 
+	 will implicitly call SpInit in order to extract the mu value from the GEO file the elset is tied to.  
+	 The elset must have a valid GEO directory available or an error will be returned.
+Syntax: 
+	int SatStateGetSatDataAll((in-Long) satKey, (out-Integer) satNum, (out-Character[8]) satName, (out-Integer) eltType, (out-Integer) revNum, (out-Double) epochDs50UTC, (out-Double) bField, (out-Integer) elsetNum, (out-Double) incli, (out-Double) node, (out-Double) eccen, (out-Double) omega, (out-Double) mnAnomaly, (out-Double) mnMotion, (out-Double) period, (out-Double) perigeeHt, (out-Double) apogeeHt, (out-Double) perigee, (out-Double) apogee, (out-Double) a)
+Parameters: 
+	satKey: The satellite's unique key
+	satNum: Satellite number
+	satName: Satellite international designator
+	eltType: Element type (see ELTTYPE_?)
+	revNum: Revolution number at epoch
+	epochDs50UTC: Epoch time time in days since 1950 UTC
+	bField: Ballistic coefficient (m^2/kg)
+	elsetNum: Element set number
+	incli: Inclination (deg)
+	node: Right ascension of ascending node (deg)
+	eccen: Eccentricity
+	omega: Argument of perigee (deg)
+	mnAnomaly: Mean anomaly (deg)
+	mnMotion: Mean motion (rev/day)
+	period: Satellite period (min)
+	perigeeHt: Satellite perigee height (km) above the ellipsoid
+	apogeeHt: Satellite apogee height (km) above the ellipsoid
+	perigee: Satellite perigee height from the center of the earth (km)
+	apogee: Satellite apogee height from the center of the earth (km)
+	a: Semi-major axis (km)
+Return Value:
+	0 if all satellite data fields are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 13. SatStateGetSatDataField
+Purpose:
+	 Retrieves an individual field of a satellite. 
+Syntax: 
+	int SatStateGetSatDataField((in-Long) satKey, (in-Integer) xf_Sat, (out-Character[512]) retVal)
+Parameters: 
+	satKey: The satellite's unique key
+	xf_Sat: Predefined number specifying which field to retrieve (see XF_SAT_?)
+	retVal: A string to contain the value of the requested field
+Return Value:
+	0 if the satellite data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 14. SatStateInitSat
+Purpose:
+	 Initializes a TLE, SPVEC, or VCM in preparation for propagation, or an EXTEPHEM in preparation for interpolation
+Syntax: 
+	int SatStateInitSat((in-Long) satKey)
+Parameters: 
+	satKey: The satellite's unique key
+Return Value:
+	0 if the satellite is successfully initialized, non-0 if there is an error
+=======================================================================================
+ 15. SatStateMse
+Purpose:
+	 Propagates a TLE/SPVEC/VCM, or interpolates an EXTEPHEM. 
+	 The satellite is propagated/interpolated to the specified time calculated in minutes since the satellite's epoch time
+Syntax: 
+	int SatStateMse((in-Long) satKey, (in-Double) mse, (out-Double) ds50UTC, (out-Integer) revNum, (out-Double[3]) pos, (out-Double[3]) vel, (out-Double[3]) llh)
+Parameters: 
+	satKey: The satellite's unique key
+	mse: The time to propagate to, specified in minutes since the satellite's epoch time
+	ds50UTC: Resulting time in days since 1950, UTC
+	revNum: Revolution number
+	pos: Resulting ECI position vector (km) in True Equator and Mean Equinox of Epoch
+	vel: Resulting ECI velocity vector (km/s) in True Equator and Mean Equinox of Epoch
+	llh: Resulting geodetic latitude (deg), longitude(deg), and height (km)
+Return Value:
+	0 if the satellite is propagated/interpolated successfully, non-0 if there is an error
+=======================================================================================
+ 16. SatStateDs50UTC
+Purpose:
+	 Propagates a TLE/SPVEC/VCM, or interpolates an EXTEPHEM. 
+	 The satellite is propagated/interpolated to the specified time calculated in days since 1950, UTC.
+Syntax: 
+	int SatStateDs50UTC((in-Long) satKey, (in-Double) ds50UTC, (out-Double) mse, (out-Integer) revNum, (out-Double[3]) pos, (out-Double[3]) vel, (out-Double[3]) llh)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The time to propagate to, specified in days since 1950, UTC
+	mse: Resulting time in minutes since the satellite's epoch time
+	revNum: Revolution number
+	pos: Resulting ECI position vector (km) in True Equator and Mean Equinox of Epoch
+	vel: Resulting ECI velocity vector (km/s) in True Equator and Mean Equinox of Epoch
+	llh: Resulting geodetic latitude (deg), longitude(deg), and height (km)
+Return Value:
+	0 if the satellite is propagated/interpolated successfully, non-0 if there is an error
+=======================================================================================
+ 17. SatStateGetPropOut
+Purpose:
+	 Returns additional propagated/interpolated results (reserved for future implementation)
+	 Reserved for future implementation
+	 Use this function immediately after the call to SatStateMse or SatStateDs50UTC. 
+Syntax: 
+	int SatStateGetPropOut((in-Long) satKey, (in-Integer) index, (out-Double[128]) destArr)
+Parameters: 
+	satKey: The satellite's unique key
+	index: Type of returned data
+	destArr: The resulting array
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 18. SatStateEphCom
+Purpose:
+	 Returns various ephemeris comparison results between two satellite states.
+	 
+	 The "in-track" is NOT the velocity direction, but is defined as completing the right handed coordinate system 
+	 defined by the position vector (radial) and the angular momentum vector (cross-track).
+Syntax: 
+	int SatStateEphCom((in-Long) primSatKey, (in-Long) secSatKey, (in-Double) ds50UTC, (in-Integer) uvwFlag, (out-Double[100]) xa_Delta)
+Parameters: 
+	primSatKey: The primary satellite's unique key
+	secSatKey: The secondary satellite's unique key
+	ds50UTC: Requested time in days since 1950 UTC
+	uvwFlag: UVW coordinate system flag: 0=use rotating UVW, 1=use inertial UVW
+	xa_Delta: The resulting ephemeris comparison deltas (see XA_DELTA_?)
+Return Value:
+	0 if the comparison results are computed successfully, non-0 if there is an error
+=======================================================================================
+ 19. SatStateEphCom_OS
+Purpose:
+	 Returns various ephemeris comparison results between two satellite states (_OS one step) .
+	 
+	 The "in-track" is NOT the velocity direction, but is defined as completing the right handed coordinate system 
+	 defined by the position vector (radial) and the angular momentum vector (cross-track).
+Syntax: 
+	void SatStateEphCom_OS((in-Double[6]) priPosVel, (in-Double[6]) secPosVel, (in-Double) ds50UTC, (in-Integer) uvwFlag, (out-Double[100]) xa_Delta)
+Parameters: 
+	priPosVel: The primary satellite's state (TEME of Date) in an array (position(1st-3rd, km), velocity(4th-6th, km/s))
+	secPosVel: The secondary satellite's state (TEME of Date) in an array (position(1st-3rd, km), velocity(4th-6th, km/s))
+	ds50UTC: Requested time in days since 1950 UTC
+	uvwFlag: UVW coordinate system flag: 0=use rotating UVW, 1=use inertial UVW
+	xa_Delta: The resulting ephemeris comparison deltas (see XA_DELTA_?)
+=======================================================================================
+ 20. SatStateHasCovMtx
+Purpose:
+	 Determines if a satellite contains covariance matrix. 
+	 0=no, 1=yes
+Syntax: 
+	int SatStateHasCovMtx((in-Long) satKey)
+Parameters: 
+	satKey: The satellite's unique key
+Return Value:
+	0=sat doesn't have cov mtx, 1=sat has cov mtx
+=======================================================================================
+ 21. SatStateGetCovUVW
+Purpose:
+	 Propagates/Interpolates UVW covariance matrix from VCM/External ephemeris to the time in days since 1950
+Syntax: 
+	int SatStateGetCovUVW((in-Long) satKey, (in-Double) ds50UTC, (out-Double[6, 6]) covUVW)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The input time in days since 1950 UTC
+	covUVW: 6x6 UVW covariance matrix
+Return Value:
+	0 if the UVW covariance matrix is propagated/interpolated successfully, non-0 if there is an error
+=======================================================================================
+ 22. SatStateGenEphFile
+Purpose:
+	 Generate external ephemeris file for the specified satellite (via its unique satKey) 
+	 Note: No need to initialize the satellite before this call. If it was intialized, it will be removed after this call
+Syntax: 
+	int SatStateGenEphFile((in-Long) satKey, (in-Double) startDs50UTC, (in-Double) stopDs50UTC, (in-Double) stepSizeSecs, (in-Character[512]) ephFileName, (in-Integer) ephFileType)
+Parameters: 
+	satKey: The satellite's unique key
+	startDs50UTC: Start time in days since 1950 UTC
+	stopDs50UTC: Stop time in days since 1950 UTC
+	stepSizeSecs: Step size in seconds. Set to zero if natural integration step size (auto adjust) is desired for SP propagator
+	ephFileName: The generated external ephemeris file name
+	ephFileType: External ephemeris file type (see EPHFILETYPE_?)
+Return Value:
+	0 if the external ephemeris file was generated successfully, non-0 if there is an error
+=======================================================================================
+ 23. GetNodalCrossingPriorToTime
+Purpose:
+	 Finds the time of ascending nodal crossing of the specified satellite prior to an input time in days since 1950 TAI
+Syntax: 
+	double GetNodalCrossingPriorToTime((in-Long) satKey, (in-Double) ds50TAI)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50TAI: Input time in ds50TAI
+Return Value:
+	Time at nodal crossing ds50TAI
+=======================================================================================
+ 24. GetGobsParams
+Purpose:
+	 Get the Gobs parameters for a TLE
+Syntax: 
+	void GetGobsParams((in-Long) satKey, (in-Double) ds50UTC, (out-Double[32]) xa_gobs, (out-Integer) errCode)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: Propagation in days since 1950 UTC
+	xa_gobs: (See XA_GOBS_?)
+	errCode: Error code
+=======================================================================================
+ 25. GobsCom
+Purpose:
+	 Does an XP GOBS comparison
+Syntax: 
+	int GobsCom((in-Long) primSatKey, (in-Long) secSatKey, (in-Double) ds50UTC, (in-Double[16]) xa_gobs_lim, (out-Double[16]) xa_gobs_delta)
+Parameters: 
+	primSatKey: The primary satellite's unique key
+	secSatKey: The secondary satellite's unique key
+	ds50UTC: Common epoch to compare in days since 1950 UTC
+	xa_gobs_lim: The gobs comparison limits (see XA_GOBS_LIM?)
+	xa_gobs_delta: The resulting gobs comparison deltas (see XA_GOBS_DELTA_?)
+Return Value:
+	0 if the comparison results are computed successfully, non-0 if there is an error
+=======================================================================================
+ 26. GobsComArr
+Purpose:
+	 Does an XP GOBS comparison using gobs arrays
+Syntax: 
+	void GobsComArr((in-Double[32]) xa_gobs_prim, (in-Double[32]) xa_gobs_sec, (in-Double[16]) xa_gobs_lim, (out-Double[16]) xa_gobs_delta)
+Parameters: 
+	xa_gobs_prim: Primary sat GOBS parameters (see XA_GOBS_?)
+	xa_gobs_sec: Secondary sat GOBS parameters (see XA_GOBS_?)
+	xa_gobs_lim: The gobs comparison limits (see XA_GOBS_LIM_?)
+	xa_gobs_delta: The resulting gobs comparison deltas (see XA_GOBS_DELTA_?)
+=======================================================================================
+
+
+

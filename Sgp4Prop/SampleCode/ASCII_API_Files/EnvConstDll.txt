@@ -1,0 +1,245 @@
+  1. EnvInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes the EnvInit DLL for use in the program.
+	 If this function returns an error, it is recommended that you stop the program immediately.
+	 
+	 An error will occur if you forget to load and initialize all the prerequisite DLLs, as listed in the DLL Prerequisites section of the accompanying documentation, before using this DLL.
+	 
+	 When the function is called, the GEO model is set to WGS-72 and the FK model is set to FK5.  If the user plans to use the SGP4 propagator, do NOT change this default setting. Otherwise, SGP4 won't work
+Syntax: 
+	int EnvInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit, see the documentation for DllMain.dll for details.
+Return Value:
+	Returns zero indicating the EnvConst DLL has been initialized successfully. Other values indicate an error.
+=======================================================================================
+  2. EnvGetInfo
+Purpose:
+	 Returns information about the EnvConst DLL.
+	 The returned string provides information about the version number, build date, and the platform of the EnvConst DLL.
+Syntax: 
+	void EnvGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about EnvConst.dll.
+=======================================================================================
+  3. EnvLoadFile
+Purpose:
+	 Reads Earth constants (GEO) model and fundamental catalogue (FK) model settings from a file.
+	 The users can use NAME=VALUE pair to setup the GEO and FK models in the input file. 
+	 
+	 For GEO model, the valid names are GEOCONST, BCONST and the valid values are WGS-72, WGS72,  72, WGS-84, WGS84, 84, EGM-96, EGM96, 96, EGM-08, EGM08, 08, JGM-2, JGM2, 2, SEM68R, 68, GEM5, 5, GEM9, and 9.
+	 
+	 For FK model, the valid name is FKCONST and the valid values are: FK4, 4, FK5, 5.
+	 
+	 All the string literals are case-insensitive.	
+Syntax: 
+	int EnvLoadFile((in-Character[512]) envFile)
+Parameters: 
+	envFile: The name of the input file.
+Return Value:
+	Returns zero indicating the input file has been loaded successfully. Other values indicate an error.
+=======================================================================================
+  4. EnvSaveFile
+Purpose:
+	 Saves the current Earth constants (GEO) model and fundamental catalogue (FK) model settings to a file.
+	 Returns zero indicating the GEO and FK settings have been successfully saved to the file. Other values indicate an error.
+Syntax: 
+	int EnvSaveFile((in-Character[512]) envConstFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	envConstFile: The name of the file in which to save the settings.
+	saveMode: Specifies whether to create a new file or append to an existing one. (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file. (0 = text format, 1 = xml (not yet implemented, reserved for future))
+Return Value:
+	Returns zero indicating the GEO and FK settings have been successfully saved to the file. Other values indicate an error.
+=======================================================================================
+  5. EnvGetFkIdx
+Purpose:
+	 Returns the current fundamental catalogue (FK) setting. 
+	 The FK model is shared among all the Standardized Astrodynamic Algorithms DLLs in the program. 
+Syntax: 
+	int EnvGetFkIdx()
+Parameters: 
+	None
+Return Value:
+	Return the current FK setting as an integer. Valid values are: (4 = FK4, 5 = FK5)
+=======================================================================================
+  6. EnvSetFkIdx
+Purpose:
+	 Changes the fundamental catalogue (FK) setting to the specified value. 
+	 If the users enter an invalid value for the fkIdx, the program will continue to use the current setting. 
+	 
+	 The FK model is globally shared among the Standardized Astrodynamic Algorithms DLLs. If its setting is changed, the new setting takes effect immediately.
+	 The FK model must be set to FK5 to use the SGP4 propagator.
+Syntax: 
+	void EnvSetFkIdx((in-Integer) xf_FkMod)
+Parameters: 
+	xf_FkMod: Specifies the FK model to use. The following values are accepted: xf_FkMod= 4: FK4, xf_FkMod= 5: FK5
+=======================================================================================
+  7. EnvGetGeoIdx
+Purpose:
+	 Returns the current Earth constants (GEO) setting. 
+	 
+	 The GEO model is shared among all the Standardized Astrodynamic Algorithms DLLs in the program.
+	 
+	 The following table lists possible values of the return value GEO setting:
+	 
+	 table
+	 
+	 Value
+	 Value interpretation
+	 
+	 84WGS-84
+	 96EGM-96
+	 08EGM-08
+	 72WGS-72 (default)
+	 2JGM2
+	 68STEM68R, SEM68R
+	 5GEM5
+	 9GEM9
+	 
+Syntax: 
+	int EnvGetGeoIdx()
+Parameters: 
+	None
+Return Value:
+	The current GEO setting, expressed as an integer.
+=======================================================================================
+  8. EnvSetGeoIdx
+Purpose:
+	 Changes the Earth constants (GEO) setting to the specified value.
+	 
+	 If you specify an invalid value for xf_GeoMod, the program will continue to use the current setting. 
+	 
+	 The GEO model is globally shared among the Standardized Astrodynamic Algorithms DLLs. If its setting is changed, the new setting takes effect immediately
+	 
+	 The following table lists possible values of the parameter value GEO setting:
+	 
+	 table
+	 
+	 Value
+	 Value interpretation
+	 
+	 84WGS-84
+	 96EGM-96
+	 08EGM-08
+	 72WGS-72 (default)
+	 2JGM2
+	 68STEM68R, SEM68R
+	 5GEM5
+	 9GEM9
+	 
+	 
+	 The GEO model must be set to WGS-72 to use the SGP4 propagator.
+Syntax: 
+	void EnvSetGeoIdx((in-Integer) xf_GeoMod)
+Parameters: 
+	xf_GeoMod: Specifies the GEO model to use.
+=======================================================================================
+  9. EnvGetGeoStr
+Purpose:
+	 Returns the name of the current Earth constants (GEO) model. 
+	 
+	 The geoStr parameter may contain one of the following values:
+	 
+	 table
+	 WGS-84
+	 EGM-96
+	 EGM-08
+	 WGS-72
+	 JGM2
+	 SEM68R
+	 GEM5
+	 GEM9
+	 
+Syntax: 
+	void EnvGetGeoStr((out-Character[6]) geoStr)
+Parameters: 
+	geoStr: A string to store the name of the current GEO model.
+=======================================================================================
+ 10. EnvSetGeoStr
+Purpose:
+	 Changes the Earth constants (GEO) setting to the model specified by a string literal. 
+	 
+	 If you specify an invalid value for geoStr, the program will continue to use the current setting.
+	 
+	 The GEO model is globally shared among the Standardized Astrodynamic Algorithms DLLs. If its setting is changed, the new setting takes effect immediately.
+	 
+	 The following table lists possible values of the parameter value GEO setting:
+	 
+	 table
+	 
+	 geoStr (any string in the row)
+	 Interpretation
+	 
+	 'WGS-84', 'WGS84', '84'WGS-84
+	 'EGM-96', 'EGM96', '96'EGM-96
+	 'EGM-08', 'EGM08', '8'EGM-08
+	 'WGS-72', 'WGS72', '72'WGS-72 (default)
+	 'JGM-2, 'JGM2', '2'JGM-2
+	 'SEM68R', '68'STEM68R, SEM68R
+	 'GEM5', '5'GEM5
+	 'GEM9', '9'GEM9
+	    
+	 
+	 The GEO model must be set to WGS-72 to use the SGP4 propagator.
+Syntax: 
+	void EnvSetGeoStr((in-Character[6]) geoStr)
+Parameters: 
+	geoStr: The GEO model to use, expressed as a string.
+=======================================================================================
+ 11. EnvGetGeoConst
+Purpose:
+	 Retrieves the value of one of the constants from the current Earth constants (GEO) model. 
+Syntax: 
+	double EnvGetGeoConst((in-Integer) xf_GeoCon)
+Parameters: 
+	xf_GeoCon: An index specifying the constant you wish to retrieve (see XF_GEOCON_?)
+Return Value:
+	Value of the requested GEO constant
+=======================================================================================
+ 12. EnvGetFkConst
+Purpose:
+	 Retrieves the value of one of the constants from the current fundamental catalogue (FK) model.
+Syntax: 
+	double EnvGetFkConst((in-Integer) xf_FkCon)
+Parameters: 
+	xf_FkCon: An index specifying the constant you wish to retrieve,  (see XF_FKCON_?)
+Return Value:
+	Value of the requested FK constant
+=======================================================================================
+ 13. EnvGetFkPtr
+Purpose:
+	 Returns a handle that can be used to access the fundamental catalogue (FK) data structure. 
+	 
+	 This function is needed when calling the ThetaGrnwch function from TimeFunc.dll.
+	 
+	 The handle returned by this function is sometimes called a pointer for historical reasons. The name EnvGetFkPtr comes from the fact that the handle used to be called a pointer.
+Syntax: 
+	__int64 EnvGetFkPtr()
+Parameters: 
+	None
+Return Value:
+	A handle which can be used to access the FK data structure.
+=======================================================================================
+ 14. EnvSetEarthShape
+Purpose:
+	 Specifies the shape of the earth that will be used by the Astro Standards software, either spherical earth or oblate earth
+Syntax: 
+	void EnvSetEarthShape((in-Integer) earthShape)
+Parameters: 
+	earthShape: The value indicates the shape of the earth: 0=spherical earth, 1= oblate earth (default)
+=======================================================================================
+ 15. EnvGetEarthShape
+Purpose:
+	 Returns the value representing the shape of the earth being used by the Astro Standards software, either spherical earth or oblate earth
+Syntax: 
+	int EnvGetEarthShape()
+Parameters: 
+	None
+Return Value:
+	The value indicates the shape of the earth that is being used in the Astro Standards software: 0=spherical earth, 1= oblate earth
+=======================================================================================
+
+
+

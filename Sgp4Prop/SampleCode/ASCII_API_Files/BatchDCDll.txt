@@ -1,0 +1,530 @@
+  1. BatchDCInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes BatchDC DLL for use in the program
+Syntax: 
+	int BatchDCInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if BatchDC.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. BatchDCGetInfo
+Purpose:
+	 Returns information about the current version of BatchDC DLL. 
+	 The information is placed in the string parameter passed in.
+Syntax: 
+	void BatchDCGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about BatchDC.dll
+=======================================================================================
+  3. BatchDCLoadFile
+Purpose:
+	 Read/Load BatchDC input data from an input file
+Syntax: 
+	int BatchDCLoadFile((in-Character[512]) batchDCInputFile)
+Parameters: 
+	batchDCInputFile: The name of the file containing BatchDC-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. BatchDCLoadFileAll
+Purpose:
+	 Loads BatchDC control parameters and all BatchDC related data (environment, time, elsets, sensors) from an input text file
+Syntax: 
+	int BatchDCLoadFileAll((in-Character[512]) batchDCInputFile)
+Parameters: 
+	batchDCInputFile: The name of the file containing BatchDC and BatchDC-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  5. BatchDCLoadCard
+Purpose:
+	 Read/Load BatchDC-typed input data from an input card
+Syntax: 
+	int BatchDCLoadCard((in-Character[512]) card)
+Parameters: 
+	card: BatchDC-type input card
+Return Value:
+	0 if the input card is read successfully, non-0 if there is an error
+=======================================================================================
+  6. BatchDCGetPCard
+Purpose:
+	 Builds and returns the DC parameter card (1P-Card) from the current DC settings
+Syntax: 
+	void BatchDCGetPCard((out-Character[512]) dcPCard)
+Parameters: 
+	dcPCard: The resulting DC 1P-Card
+=======================================================================================
+  7. BatchDCSaveFile
+Purpose:
+	 Saves any currently loaded BatchDC-related settings to a file
+Syntax: 
+	int BatchDCSaveFile((in-Character[512]) batchDCFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	batchDCFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  8. BatchDCGetParams
+Purpose:
+	 Gets BatchDC parameter data (P Card) - all fields
+	 
+	 The table below shows the structure of the integer array xai_ctrl:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	     0DC print option
+	     1Apply biases from sensor file
+	     2Weighed DC flag
+	     3Epoch placement control
+	     4Element correction flag - Ag
+	     5Element correction flag - Af
+	     6Element correction flag - Psi
+	     7Element correction flag - Chi
+	     8Element correction flag - L
+	     9Element correction flag - N
+	     10Element correction flag - B* (SGP4) B (SP)
+	     11Element correction flag - Agom (SP)
+	     12Correction order
+	     13Correct by the specified correction order for 1 iteration only
+	     14Flag specifies which residuals are used for RMS calculation and convergence
+	     15Flag; if set, produce sensor performance analysis summary
+	     16Flag; if set, deweight according to # of obs per track
+	     17Iteration summary control
+	     18Partials method
+	     19Light time correction control
+	     20Number of iteration to allow no auto rejection of residuals
+	     21Propagation method
+	     22Flag; if set, correct B* vs X
+	     23Max # of iterations before declaring divergence
+	     24Use predicted RMS versus previous RMS for convergence testing
+	 
+	 
+	 The table below shows the structure of the real array xar_ctrl:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	     0RMS multiplier
+	     1Time of specified epoch
+	     2Convergence criteria on time correction (%)
+	     3First pass delta-t rejection criteria
+	     4Convergence criteria on 7-elt correction (%)
+	     5Reset value for B term in subset correction
+	 
+Syntax: 
+	void BatchDCGetParams((out-Integer[256]) xai_ctrl, (out-Double[256]) xar_ctrl, (out-Character[512]) xas_ctrl)
+Parameters: 
+	xai_ctrl: Array contains integer BatchDC parameters (see XAI_CTRL_?)
+	xar_ctrl: Array contains double BatchDC parameters (see XAR_CTRL_?)
+	xas_ctrl: BatchDC parameters in character string format - not yet used
+=======================================================================================
+  9. BatchDCSetParams
+Purpose:
+	 Sets BatchDC parameter data (P Card) - all fields
+	 See BatchDCGetParams for the structure of the xai_ctrl and xar_ctrl arrays.
+Syntax: 
+	void BatchDCSetParams((in-Integer[256]) xai_ctrl, (in-Double[256]) xar_ctrl, (in-Character[512]) xas_ctrl)
+Parameters: 
+	xai_ctrl: Array contains integer BatchDC parameters (see XAI_CTRL_?)
+	xar_ctrl: Array contains double BatchDC parameters (see XAR_CTRL_?)
+	xas_ctrl: BatchDC parameters in character string format - not yet used
+=======================================================================================
+ 10. BatchDCGetCtrlArr
+Purpose:
+	 Returns DC control parameters using array format
+Syntax: 
+	void BatchDCGetCtrlArr((out-Double[64]) xa_dcCtrl)
+Parameters: 
+	xa_dcCtrl: Output DC control parameters (see XA_DCCTRL_?)
+=======================================================================================
+ 11. BatchDCSetCtrlArr
+Purpose:
+	 Sets DC control parameters using array format
+Syntax: 
+	int BatchDCSetCtrlArr((in-Double[64]) xa_dcCtrl)
+Parameters: 
+	xa_dcCtrl: Input DC control parameters (see XA_DCCTRL_?)
+Return Value:
+	0 if the input parameters are set successfully, non-0 if there is an error
+=======================================================================================
+ 12. BatchDCInitSat
+Purpose:
+	 Initializes DC parameters for the satellite
+	 See BatchDCGetParams for the structure of the xai_dcElts and xar_dcElts arrays.
+Syntax: 
+	int BatchDCInitSat((in-Long) satKey, (out-Integer) numObs, (out-Long[*]) obsKeys, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key
+	numObs: Actual number of obs being selected to be used in the DC
+	obsKeys: The array in which to store the obsKeys
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 13. BatchDCInitSatObsKeys
+Purpose:
+	 Initializes DC parameters for the satellite using only the provided/preselected obsKeys (not all loaded obs) (Thread-Safe)
+	 See BatchDCGetParams for the structure of the xai_dcElts and xar_dcElts arrays.
+Syntax: 
+	int BatchDCInitSatObsKeys((in-Long) satKey, (in-Double[64]) xa_dcCtrl, (in-Integer) numObs, (in-Long[*]) obsKeys, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_dcCtrl: Input DC control parameters
+	numObs: Actual number of obs being selected to be used in the DC
+	obsKeys: The array contains preselected obsKeys
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 14. BatchDCInitSatObsSel
+Purpose:
+	 Initializes DC parameters for the satellite using only obs that match the provided obs selection criteria (not all loaded obs) (Thread-Safe)
+	 See BatchDCGetParams for the structure of the xai_dcElts and xar_dcElts arrays.
+	 Note: This can be accomplished by using ObsGetSelected() and BatchDCInitSatObsKeys() as well
+Syntax: 
+	int BatchDCInitSatObsSel((in-Long) satKey, (in-Double[64]) xa_dcCtrl, (in-Double[128]) xa_selob, (out-Integer) numObs, (out-Long[*]) obsKeys, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_dcCtrl: Input DC control parameters
+	xa_selob: Input obs selection criteria for the DC of this satellite (see XA_SELOB_?)
+	numObs: Actual number of obs being selected (matching the specified obs selection criteria) to be used in the DC
+	obsKeys: The array in which to store the obsKeys
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 15. BatchDCSolve
+Purpose:
+	 Performs batch-least-square differential corrections to the specified satellite and
+	 return the corrected elements and related data - using all loaded obs
+	 
+	 Note: The input satellite must be intialized by calling BatchDCInitSat() prior to calling this routine
+	 
+	 See BatchDCGetParams for the structure of the xai_dcElts array.
+	 
+	 The table below shows the structure of the integer array xar_dcElts:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	     0elset's epoch time in days since 1950 UTC
+	     1n-dot/2  (for SGP, eph-type = 0)
+	     2n-double-dot/6  (for SGP, eph-type = 0)
+	     3either SGP4 bStar (1/er) or SP bTerm (m2/kg)
+	     4SP agom (m**2/kg)
+	     5SP outgassing parameter (km/s**2)
+	     6semi major axis (km)
+	     7eccentricity
+	     8inclination (deg)
+	     9mean anamoly (deg)
+	     10right ascension of the ascending node (deg)
+	     11argument of perigee (deg)
+	     12AF
+	     13AG
+	     14CHI
+	     15PSI
+	     16mean longitude (deg)
+	     17mean motion (revs/day)
+	     18ECI posX (km)
+	     19ECI posY (km)
+	     20ECI posZ (km)
+	     21ECI velX (km/s)
+	     22ECI velY (km/s)
+	     23ECI velZ (km/s)
+	     
+	     40RMS (km)
+	     41unweighted RMS (km)
+	     42delta T RMS (min)
+	     43beta RMS (deg)
+	     44delta height RMS (km)
+	     45convergence value (km)
+	     46predicted RMS (km)
+	     
+	     60covariance diagonal L
+	     61covariance diagonal N
+	     62covariance diagonal CHI
+	     63covariance diagonal PSI
+	     64covariance diagonal AF
+	     65covariance diagonal AG
+	     66covariance diagonal BTERM
+	     67covariance not used
+	     68covariance diagonal AGOM
+	     
+	     200-244equinoctial covariance matrix - the lower triangular half 200-244
+	 
+Syntax: 
+	int BatchDCSolve((in-Long) satKey, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 16. BatchDCSolveSelObs
+Purpose:
+	 Performs batch-least-square differential corrections to the specified satellite and
+	 return the corrected elements and related data - using only the provided obsKeys (not all loaded obs)
+	 Note: The input satellite must be intialized by calling BatchDCInitSat() prior to calling this routine
+	 See BatchDCGetParams for the structure of the xai_dcElts array.
+	 See BatchDCSolve for the structure of the xar_dcElts array.
+Syntax: 
+	int BatchDCSolveSelObs((in-Long) satKey, (in-Long[*]) obsKeys, (in-Integer) numObs, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key
+	obsKeys: The array of obs keys that wil be used in the DC
+	numObs: The size of the obsKeys array
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 17. BatchDCRemoveSat
+Purpose:
+	 Removes a satellite, represented by the satKey, from BatchDC's memory
+Syntax: 
+	int BatchDCRemoveSat((in-Long) satKey)
+Parameters: 
+	satKey: The unique key of the satellite to be removed
+Return Value:
+	0 if the satellite is removed successfully, non-0 if there is an error
+=======================================================================================
+ 18. BatchDCIterate
+Purpose:
+	 Iterates DC for the satellite
+	 
+	 xa_ObsRes size is [numObs, 100].  xa_rejFlg size is [numObs, 32].
+	 
+	 The table below shows the values contained in xa_ObsRes for each ob:
+	 
+	     table
+	     
+	         Index
+	         Index Interpretation
+	     
+	      0  Azimuth residual (deg)
+	      1  Elevation residual (deg)
+	      2  Range residual (km)
+	      3  Height residual (deg)
+	      4  Beta residual (deg)
+	      5  Delta T residual (min)
+	      6  Vector magnitude (km)
+	      7  Time since epoch (days)
+	      8  True argument of latitude (deg)
+	      9  Revolution number  
+	     10  Range rate residual (km/sec)
+	     11  observation ASTAT
+	     12  observation type
+	     13  satellite true anomaly (deg)
+	     14  satellite elevation (deg)
+	     15  satellite maintenance category
+	     16  obs time in ds50UTC
+	     17  obs azimuth (deg)
+	     18  obs elevation (deg)
+	     19  Velocity angle residual (deg)
+	     20  Angular momentum residual (deg)
+	     21  Right ascension residual (deg) (for ob types 5, 9, 19)
+	     22  Declination residual (deg) (for ob types 5, 9, 19)
+	     23  Delta X position (km)
+	     24  Delta Y position (km)
+	     25  Delta Z position (km)
+	     26  Delta X velocity (km/sec)
+	     27  Delta Y velocity (km/sec)
+	     28  Delta Z velocity (km/sec)
+	     29  Angle only obs computed range (km)
+	     30  obs azimuth (deg)
+	     31  obs elevation (deg)
+	 
+	 
+	 See BatchDCGetParams for the structure of the xai_dcElts array.
+	 
+	 See BatchDCSolve for the structure of the xar_dcElts array.
+Syntax: 
+	int BatchDCIterate((in-Long) satKey, (out-Double[*, 100]) xa_ObsRes, (out-Integer[*, 32]) xa_rejFlg, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_ObsRes: The resulting array of obs residuals (see XA_OBSRES_?)
+	xa_rejFlg: Obs rejection flag array (see XA_REJFLG_?)
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	iterating code: 0=successful, 1=has error, 2=iterating, 3=diverged (try to recover)
+=======================================================================================
+ 19. BatchDCGetVcm
+Purpose:
+	 Returns a concatenated string representation of a VCM generated by a successful DC
+Syntax: 
+	int BatchDCGetVcm((in-Long) satKey, (out-Character[4000]) vcmLines)
+Parameters: 
+	satKey: The satellite's unique key
+	vcmLines: The resulting concatenated string representation of the VCM,
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 20. BatchDCGetSpVOut
+Purpose:
+	 Returns the full file name of the output SP Vector file that was specified using "SPVOUT = " 
+	 in the main input file or using the BatchDCSetSpVOutFileName() function call
+Syntax: 
+	void BatchDCGetSpVOut((out-Character[512]) spVOutFile)
+Parameters: 
+	spVOutFile: The output file that stores SP output message
+=======================================================================================
+ 21. BatchDCSetSpVOut
+Purpose:
+	 Sets the full file name of the SP Vector output file which will be used to store the generated SP vector data
+Syntax: 
+	void BatchDCSetSpVOut((in-Character[512]) spVOutFile)
+Parameters: 
+	spVOutFile: The output file that stores SP vector output (VCM message)
+=======================================================================================
+ 22. BatchDCResetAll
+Purpose:
+	 Resets all BatchDC control parameters back to their default values and empties the DC binary tree (objects created by BatchDCInitSat)
+Syntax: 
+	void BatchDCResetAll()
+Parameters: 
+	None
+=======================================================================================
+ 23. BatchDCGetAccptCrit
+Purpose:
+	 Returns DC acceptance criteria data for the specified satellite
+Syntax: 
+	int BatchDCGetAccptCrit((in-Long) satKey, (out-Double[64]) xa_ac)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_ac: Acceptance criteria values in an array (see XA_AC_?)
+Return Value:
+	0 if the acceptance criteria is successfully returned, non-0 if there is an error
+=======================================================================================
+ 24. SpToEGP
+Purpose:
+	 Performs batch-least-square differential corrections to the specified satellite (VCM/SPVEC) and
+	 returns the corrected SGP4/SGP4-XP elements and related data
+	 Note: No need to initialize VCM before calling this method
+Syntax: 
+	int SpToEGP((in-Long) satKey, (inout-Double[64]) xa_egpCtrl, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key of the specified satellite (must be VCM or SPVEC)
+	xa_egpCtrl: Array (in/out) containing settings for SpToEGP conversion (see XA_EGPCTRL_?)
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 25. SpToTle
+Purpose:
+	 Performs batch-least-square differential corrections to the specified satellite (VCM/SPVEC) and
+	 returns the corrected elements SGP4/SGP4-XP in form of a TLE
+	 Note: No need to initialize VCM before calling this method
+Syntax: 
+	int SpToTle((in-Long) satKey, (inout-Double[64]) xa_egpCtrl, (out-Character[512]) line1, (out-Character[512]) line2)
+Parameters: 
+	satKey: The satellite's unique key of the specified satellite (must be VCM or SPVEC)
+	xa_egpCtrl: Array (in/out) containing settings for SpToEGP conversion (see XA_EGPCTRL_?)
+	line1: Returned first line of a TLE.
+	line2: Returned second line of a TLE
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 26. SpToTleComb
+Purpose:
+	 Combines SpToEGP and SpToTle functions into just one function call
+	 Note: No need to initialize VCM before calling this method
+Syntax: 
+	int SpToTleComb((in-Long) satKey, (inout-Double[64]) xa_egpCtrl, (out-Character[512]) line1, (out-Character[512]) line2, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key of the specified satellite (must be VCM or SPVEC)
+	xa_egpCtrl: Array (in/out) containing settings for SpToEGP conversion (see XA_EGPCTRL_?)
+	line1: Returned first line of a TLE.
+	line2: Returned second line of a TLE
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 27. SpToCsv
+Purpose:
+	 Performs batch-least-square differential corrections to the specified satellite (VCM/SPVEC) and
+	 returns the corrected elements SGP4/SGP4-XP in form of a TLE
+	 Note: No need to initialize VCM before calling this method
+Syntax: 
+	int SpToCsv((in-Long) satKey, (inout-Double[64]) xa_egpCtrl, (out-Character[512]) csvLine)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_egpCtrl: Array (in/out) containing settings for SpToEGP conversion (see XA_EGPCTRL_?)
+	csvLine: A string to hold the TLE in csv format.
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 28. SpToCsvComb
+Purpose:
+	 Combines SpToEGP and SpToCsv functions into just one function call
+	 Note: No need to initialize VCM before calling this method
+Syntax: 
+	int SpToCsvComb((in-Long) satKey, (inout-Double[64]) xa_egpCtrl, (out-Character[512]) csvLine, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	satKey: The satellite's unique key
+	xa_egpCtrl: Array (in/out) containing settings for SpToEGP conversion (see XA_EGPCTRL_?)
+	csvLine: A string to hold the TLE in csv format.
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 29. ExtEphemToEGP
+Purpose:
+	 Performs batch-least-square differential corrections using the input external ephemeris and treating them as observations and
+	 returns the corrected SGP4/SGP4-XP elements and related data
+Syntax: 
+	int ExtEphemToEGP((in-Character[512]) extEphFile, (inout-Double[64]) xa_egpCtrl, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	extEphFile: The name of the file containing external ephemeris data to be used in EGP
+	xa_egpCtrl: Array (in/out) containing settings for SpToEGP conversion (see XA_EGPCTRL_?)
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+ 30. IomodDC
+Purpose:
+	 Performs IOMOD/IODET and then batch-least-square differential corrections on the input observations via their obsKeys (Thread-Safe) 
+Syntax: 
+	int IomodDC((in-Integer) numObs, (in-Long[*]) obsKeys, (in-Double[64]) xa_iomdc, (out-Integer[256]) xai_dcElts, (out-Double[256]) xar_dcElts, (out-Character[512]) xas_dcElts)
+Parameters: 
+	numObs: Number of preselected obs to be used in IOMOD and then DC
+	obsKeys: The array contains preselected obsKeys
+	xa_iomdc: Array containing settings for the DC (see XA_IOMDC_?)
+	xai_dcElts: Array of integers containing resulting BatchDC data (see XAI_DCELTS_?)
+	xar_dcElts: Array of doubles containing resulting BatchDC data (see XAR_DCELTS_?)
+	xas_dcElts: String containing resulting BatchDC data (see XAS_DCELTS_?)
+Return Value:
+	0 if successful, 1: dc fails, best elset returned, 2: dc fails, no eleset returned
+=======================================================================================
+
+
+

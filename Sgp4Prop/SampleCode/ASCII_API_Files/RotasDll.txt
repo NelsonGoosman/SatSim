@@ -1,0 +1,336 @@
+  1. RotasInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Rotas DLL for use in the program
+Syntax: 
+	int RotasInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if the Rotas dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. RotasGetInfo
+Purpose:
+	 Returns information about the current version of Rotas DLL. 
+	 The information is placed in the string parameter passed in.
+Syntax: 
+	void RotasGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Rotas.dll
+=======================================================================================
+  3. RotasLoadFile
+Purpose:
+	 Loads Rotas-related parameters from an input text file
+Syntax: 
+	int RotasLoadFile((in-Character[512]) rotasInputFile)
+Parameters: 
+	rotasInputFile: The name of the file containing Rotas-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. RotasLoadFileAll
+Purpose:
+	 Loads Rotas control parameters and all Rotas related data (environment, time, elsets, sensors, obs) from an input text file
+Syntax: 
+	int RotasLoadFileAll((in-Character[512]) rotasInputFile)
+Parameters: 
+	rotasInputFile: The name of the file containing Rotas control parameters and all Rotas related data
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  5. RotasLoadCard
+Purpose:
+	 Loads a single Rotas-typed card
+Syntax: 
+	int RotasLoadCard((in-Character[512]) card)
+Parameters: 
+	card: Rotas-type input card
+Return Value:
+	0 if the input card is read successfully, non-0 if there is an error
+=======================================================================================
+  6. RotasSaveFile
+Purpose:
+	 Saves current Rotas settings to a file
+Syntax: 
+	int RotasSaveFile((in-Character[512]) rotasFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	rotasFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  7. RotasGetPCard
+Purpose:
+	 Builds and returns the Rotas P-Card from the current Rotas settings
+Syntax: 
+	void RotasGetPCard((out-Character[512]) rotasPCard)
+Parameters: 
+	rotasPCard: The resulting Rotas P-Card string
+=======================================================================================
+  8. RotasGetPAll
+Purpose:
+	 Retrieves all Rotas control parameters with a single function call
+Syntax: 
+	void RotasGetPAll((out-Character[5]) rotasMode, (out-Double) grossBeta, (out-Double) betaLimit, (out-Double) deltaTLimit, (out-Double) deltaHLimit, (out-Integer) astat2Mult, (out-Integer) prtFlag, (out-Integer) retagFlag, (out-Integer) ltcFlag, (out-Integer) maxNumAssoc, (out-Integer) debiasFlag, (out-Integer) diagMode, (out-Integer) covPrtFlag, (out-Integer) isTrackMode, (out-Integer) remRetagObs, (out-Double[128]) extArr)
+Parameters: 
+	rotasMode: Rotas processing mode: TAG=verify ob tab (default), FTAG=force assoc vs all input elsets, ALLEL=find the best # assoc elsets
+	grossBeta: Gross beta threshold (deg) (default=2.0)
+	betaLimit: ASTAT 0 beta limit (deg) (default=0.05)
+	deltaTLimit: ASTAT 0 delta-t limit (min) (default=0.05)
+	deltaHLimit: ASTAT 0 delta-height limit (km) (default=10)
+	astat2Mult: ASTAT 2 multiplier (default=4)
+	prtFlag: Residual print flag: 1=print all, 2=print ASTAT 0/1, 3=print no residuals, 4=print ASTAT 0/1/2
+	retagFlag: Retag flag: 0=don't retag (default), 1=retag ASTAT 0/1 to B3, 2=retag ASTAT 0/1 to TTY, 3=retag ASTAT 0/1/2 to B3
+	ltcFlag: Type 5 observation light-time correct flag: 0=don't apply LTC, 1=apply LTC analytically, 2=apply LTC exactly
+	maxNumAssoc: Max number of associations per ob (ALLEL mode only)
+	debiasFlag: Debias observation flag: 0=don't apply debias, 1=debias ob by applying sensor's bias data
+	diagMode: Diagnostic print flag
+	covPrtFlag: Covariance flag: 1=Propagate covariance and compute covariance matrix (covariance matrix must be available)
+	isTrackMode: Track mode: 1=use track processing (each track is treated as a single entity)
+	remRetagObs: Retagged obs are removed from further association
+	extArr: For future use
+=======================================================================================
+  9. RotasSetPAll
+Purpose:
+	 Sets all Rotas control parameters with a single function call
+Syntax: 
+	void RotasSetPAll((in-Character[5]) rotasMode, (in-Double) grossBeta, (in-Double) betaLimit, (in-Double) deltaTLimit, (in-Double) deltaHLimit, (in-Integer) astat2Mult, (in-Integer) prtFlag, (in-Integer) retagFlag, (in-Integer) ltcFlag, (in-Integer) maxNumAssoc, (in-Integer) debiasFlag, (in-Integer) diagMode, (in-Integer) covPrtFlag, (in-Integer) isTrackMode, (in-Integer) remRetagObs, (in-Double[128]) extArr)
+Parameters: 
+	rotasMode: Rotas processing mode: TAG=verify ob tab (default), FTAG=force assoc vs all input elsets, ALLEL=find the best # assoc
+	grossBeta: Gross beta threshold (deg) (default=2.0)
+	betaLimit: ASTAT 0 beta limit (deg) (default=0.05)
+	deltaTLimit: ASTAT 0 delta-t limit (min) (default=0.05)
+	deltaHLimit: ASTAT 0 delta-height limit (km) (default=10)
+	astat2Mult: ASTAT 2 multiplier (default=4)
+	prtFlag: Residual print flag: 1=print all, 2=print ASTAT 0/1, 3=print no residuals, 4=print ASTAT 0/1/2
+	retagFlag: Retag flag: 0=don't retag (default), 1=retag ASTAT 0/1 to B3, 2=retag ASTAT 0/1 to TTY, 3=retag ASTAT 0/1/2 to B3
+	ltcFlag: Type 5 observation light-time correct flag: 0=don't apply LTC, 1=apply LTC analytically, 2=apply LTC exactly
+	maxNumAssoc: Max number of associations per ob (ALLEL mode only)
+	debiasFlag: Debias observation flag: 0=don't apply debias, 1=debias ob by applying sensor's bias data
+	diagMode: Diagnostic print flag
+	covPrtFlag: Covariance flag: 1=Propagate covariance and compute covariance matrix (covariance matrix must be available)
+	isTrackMode: Track mode: 1=use track processing (each track is treated as a single entity)
+	remRetagObs: Retagged obs are removed from further association
+	extArr: For future use
+=======================================================================================
+ 10. RotasGetPField
+Purpose:
+	 Retrieves the value of a specified Rotas control parameter (P-card field)
+	 
+	 The table below shows the values for the xf_RP parameter:
+	 
+	 table
+	 
+	 Index
+	 Index Interpretation
+	 
+	  1  Rotas processing mode
+	  2  Gross Beta limit (deg)
+	  3  ASTAT 0 Beta limit (deg)
+	  4  ASTAT 0 delta-t limit (min)
+	  5  ASTAT 0 delta-height limit (km)
+	  6  ASTAT 2 multiplier
+	  7  Residual print flag
+	  8  Retag ASTAT 1 ob flag
+	  9  Light-time correction flag
+	 10  Maximum number of ALLEL assoc's to compute
+	 11  Diagnostic print flag
+	 12  Covariance print flag
+	 13  Perform track processing
+	 14  Retagged ob are removed from further association
+	 15  Debias ob flag
+	 
+Syntax: 
+	void RotasGetPField((in-Integer) xf_RP, (out-Character[512]) retVal)
+Parameters: 
+	xf_RP: Predefined number specifying which Rotas control parameter  to retrieve
+	retVal: A string to hold the value of the requested Rotas parameter
+=======================================================================================
+ 11. RotasSetPField
+Purpose:
+	  Sets the value of a specified Rotas control parameter (P-card field)
+	 See RotasGetPField for values for the xf_RP parameter.
+Syntax: 
+	void RotasSetPField((in-Integer) xf_RP, (in-Character[512]) valueStr)
+Parameters: 
+	xf_RP: Predefined number specifying which Rotas control parameter to set
+	valueStr: The new value of the specified field, expressed as a string
+=======================================================================================
+ 12. RotasGetAssocMultipliers
+Purpose:
+	 Gets ASTAT 1 association multipliers
+Syntax: 
+	void RotasGetAssocMultipliers((out-Integer[12]) xa_assocMultp)
+Parameters: 
+	xa_assocMultp: ASTAT 1 association multiplier array (see XA_ASSOCMULTP_?)
+=======================================================================================
+ 13. RotasSetAssocMultipliers
+Purpose:
+	 Sets ASTAT 1 association multipliers
+Syntax: 
+	void RotasSetAssocMultipliers((in-Integer[12]) xa_assocMultp)
+Parameters: 
+	xa_assocMultp: ASTAT 1 association multiplier array (see XA_ASSOCMULTP_?)
+=======================================================================================
+ 14. RotasResetAll
+Purpose:
+	 Resets all Rotas control parameters back to their default values
+Syntax: 
+	void RotasResetAll()
+Parameters: 
+	None
+=======================================================================================
+ 15. RotasHasASTAT
+Purpose:
+	 Determines if the observation/satellite pair can possibly have an association
+Syntax: 
+	int RotasHasASTAT((in-Long) obsKey, (in-Long) satKey)
+Parameters: 
+	obsKey: The obervation's unique key
+	satKey: The satellite's unique key
+Return Value:
+	0 if the observation/satellite pair doesn't have an association, 1 if the pair has an association
+=======================================================================================
+ 16. RotasHasASTAT_MT
+Purpose:
+	 Determines if the observation/satellite pair can possibly have an association - suitable for multithread application (using global Multipliers)
+Syntax: 
+	int RotasHasASTAT_MT((in-Double[16]) xa_rt_parms, (in-Long) obsKey, (in-Long) satKey)
+Parameters: 
+	xa_rt_parms: ROTAS control parameters (see XA_RT_PARMS_?)
+	obsKey: The obervation's unique key
+	satKey: The satellite's unique key
+Return Value:
+	0 if the observation/satellite pair doesn't have an association, 1 if the pair has an association
+=======================================================================================
+ 17. RotasHasASTATMultp_MT
+Purpose:
+	 Determines if the observation/satellite pair can possibly have an association - suitable for multithread application (using provided Multipliers)
+Syntax: 
+	int RotasHasASTATMultp_MT((in-Integer[12]) xa_assocMultp, (in-Double[16]) xa_rt_parms, (in-Long) obsKey, (in-Long) satKey)
+Parameters: 
+	xa_assocMultp: ASTAT 1 association multiplier array (see XA_ASSOCMULTP_?)
+	xa_rt_parms: ROTAS control parameters (see XA_RT_PARMS_?)
+	obsKey: The obervation's unique key
+	satKey: The satellite's unique key
+Return Value:
+	0 if the observation/satellite pair doesn't have an association, 1 if the pair has an association
+=======================================================================================
+ 18. RotasComputeObsResiduals
+Purpose:
+	 Computes residuals for one observation against one satellite
+	 Obs type 0 (range rate only) cannot be used to compute residuals.
+Syntax: 
+	int RotasComputeObsResiduals((in-Long) obsKey, (in-Long) satKey, (out-Double[100]) xa_ObsRes, (out-Double[9]) satElts, (out-Double[9]) obElts)
+Parameters: 
+	obsKey: The observation's unique key
+	satKey: The satellite's unique key
+	xa_ObsRes: The resulting array of obs residuals (see XA_OBSRES_?)
+	satElts: Satellite state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); satellite LLH (7th-9th)
+	obElts: Observation state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); observation LLH (7th-9th)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 19. RotasComputeObsResiduals_MT
+Purpose:
+	 Computes residuals for one observation against one satellite - suitable for multithread application (using global Multipliers)
+	 Obs type 0 (range rate only) cannot be used to compute residuals.
+Syntax: 
+	int RotasComputeObsResiduals_MT((in-Double[16]) xa_rt_parms, (in-Long) obsKey, (in-Long) satKey, (out-Double[100]) xa_ObsRes, (out-Double[9]) satElts, (out-Double[9]) obElts)
+Parameters: 
+	xa_rt_parms: ROTAS control parameters (see XA_RT_PARMS_?)
+	obsKey: The observation's unique key
+	satKey: The satellite's unique key
+	xa_ObsRes: The resulting array of obs residuals (see XA_OBSRES_?)
+	satElts: Satellite state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); satellite LLH (7th-9th)
+	obElts: Observation state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); observation LLH (7th-9th)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 20. RotasComputeObsResidualsMultp_MT
+Purpose:
+	 Computes residuals for one observation against one satellite - suitable for multithread application (using provided Multipliers)
+	 Obs type 0 (range rate only) cannot be used to compute residuals.
+Syntax: 
+	int RotasComputeObsResidualsMultp_MT((in-Integer[12]) xa_assocMultp, (in-Double[16]) xa_rt_parms, (in-Long) obsKey, (in-Long) satKey, (out-Double[100]) xa_ObsRes, (out-Double[9]) satElts, (out-Double[9]) obElts)
+Parameters: 
+	xa_assocMultp: ASTAT 1 association multiplier array (see XA_ASSOCMULTP_?)
+	xa_rt_parms: ROTAS control parameters (see XA_RT_PARMS_?)
+	obsKey: The observation's unique key
+	satKey: The satellite's unique key
+	xa_ObsRes: The resulting array of obs residuals (see XA_OBSRES_?)
+	satElts: Satellite state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); satellite LLH (7th-9th)
+	obElts: Observation state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); observation LLH (7th-9th)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 21. RotasComputeTrackResiduals
+Purpose:
+	 Computes residuals for a track of observations against one satellite. Each track is treated as a single entity (using global parameters)
+Syntax: 
+	int RotasComputeTrackResiduals((in-Long[*]) obsKeys, (in-Integer) trackStartIdx, (in-Integer) trackLength, (in-Long) satKey, (out-Double[100]) xa_ObsRes, (out-Long[3]) trackObsKeys, (out-Character[512]) b3ObsCard, (out-Double[9]) satElts, (out-Double[9]) obElts)
+Parameters: 
+	obsKeys: The input array of obsKeys sorted in ascending order of sensor, satno, obsType, time, elev
+	trackStartIdx: The start index of the first obs of the track
+	trackLength: The input track length
+	satKey: The satellite's unique key
+	xa_ObsRes: The resulting array of obs residuals (see XA_OBSRES_?)
+	trackObsKeys: The 3 obsKeys of the 3 obs that were chosen to represent the track
+	b3ObsCard: The resulting B3-card created by IOMOD to represent the whole track
+	satElts: Satellite state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); satellite LLH (8th-9th)
+	obElts: Observation state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); observation LLH (8th-9th)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 22. RotasComputeTrackResiduals_MT
+Purpose:
+	 Computes residuals for a track of observations against one satellite. Each track is treated as a single entity (using provided parameters)
+Syntax: 
+	int RotasComputeTrackResiduals_MT((in-Integer[12]) xa_assocMultp, (in-Double[16]) xa_rt_parms, (in-Long[*]) obsKeys, (in-Integer) trackStartIdx, (in-Integer) trackLength, (in-Long) satKey, (out-Double[100]) xa_ObsRes, (out-Long[3]) trackObsKeys, (out-Character[512]) b3ObsCard, (out-Double[9]) satElts, (out-Double[9]) obElts)
+Parameters: 
+	xa_assocMultp: ASTAT 1 association multiplier array (see XA_ASSOCMULTP_?)
+	xa_rt_parms: ROTAS control parameters (see XA_RT_PARMS_?)
+	obsKeys: The input array of obsKeys sorted in ascending order of sensor, satno, obsType, time, elev
+	trackStartIdx: The start index of the first obs of the track
+	trackLength: The input track length
+	satKey: The satellite's unique key
+	xa_ObsRes: The resulting array of obs residuals (see XA_OBSRES_?)
+	trackObsKeys: The 3 obsKeys of the 3 obs that were chosen to represent the track
+	b3ObsCard: The resulting B3-card created by IOMOD to represent the whole track
+	satElts: Satellite state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); satellite LLH (8th-9th)
+	obElts: Observation state in ECI/TEME of Date: position (1st-3rd), velocity (4th-6th); observation LLH (8th-9th)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 23. RotasCompObResDirect
+Purpose:
+	 Computes residuals for one observation against one satellite directly (no need to load ob and propagate satellite)
+Syntax: 
+	int RotasCompObResDirect((in-Double[16]) obDataArr, (in-Double[16]) satDataArr, (out-Double[100]) xa_ObsRes)
+Parameters: 
+	obDataArr: The array storing observation data: position (1st-3rd), velocity (4th-6th), unused (7th-16th)
+	satDataArr: The array storing satellite data: position (1st-3rd), velocity (4th-6th), unused (7th-16th)
+	xa_ObsRes: The resulting array of obs residuals (see XA_OBSRES_?)
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 24. RotasGetRetagObsFile
+Purpose:
+	 Returns the name of the retag obs file
+Syntax: 
+	void RotasGetRetagObsFile((out-Character[512]) retagObsFile)
+Parameters: 
+	retagObsFile: The resulting retag file name
+=======================================================================================
+ 25. RotasSetRetagObsFile
+Purpose:
+	 Sets the file name of the retag obs file
+Syntax: 
+	void RotasSetRetagObsFile((in-Character[512]) retagObsFile)
+Parameters: 
+	retagObsFile: The retag file name
+=======================================================================================
+
+
+

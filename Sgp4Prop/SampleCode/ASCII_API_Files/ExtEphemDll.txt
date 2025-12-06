@@ -1,0 +1,404 @@
+  1. ExtEphInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes ExtEphem DLL for use in the program
+	 If this function returns an error, it is recommended that the users stop the program immediately. 
+	 The error occurs if the users forget to load and initialize all the prerequisite DLLs, as listed 
+	 in the DLL Prerequisite section, before using this DLL.
+Syntax: 
+	int ExtEphInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if ExtEphem DLL is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. ExtEphGetInfo
+Purpose:
+	 Returns information about the current version of ExtEphem DLL. 
+	 The information is placed in the string parameter passed in.
+	 The returned string provides information about the version number, build date, and the platform of the ExtEphem DLL. 
+Syntax: 
+	void ExtEphGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about ExtEphem.dll
+=======================================================================================
+  3. ExtEphLoadFile
+Purpose:
+	 Loads a file containing EXTEPHEM's
+	 The users can use this function repeatedly to load EXTEPHEMs from different input files. 
+	 However, only unique satKeys are stored in the binary tree. Duplicated EXTEPHEMs 
+	 (determined by same file name, satellite number + epoch) won't be stored.
+	 
+	 EXTEPHEMs can be included directly in the main input file or they can be read from a 
+	 separate file identified with "EPHFIL =[pathname\filename]".
+	 
+	 This function only reads EXTEPHEMs from the main input file or EXTEPHEMs from the file 
+	 identified with EPHFIL in the input file. It won't read anything else.
+Syntax: 
+	int ExtEphLoadFile((in-Character[512]) extEphFile)
+Parameters: 
+	extEphFile: The name of the file containing external ephemeris data to be loaded
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. ExtEphSaveFile
+Purpose:
+	 Saves the currently loaded EXTEPHEM's to a file (EPHFIL=input file name)
+Syntax: 
+	int ExtEphSaveFile((in-Character[512]) extEphFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	extEphFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  5. ExtEphRemoveSat
+Purpose:
+	 Removes an EXTEPHEM represented by the satKey from memory
+	 If the users enter an invalid satKey (the satKey does not exist in memory), the function will return a non-zero value indicating an error.
+Syntax: 
+	int ExtEphRemoveSat((in-Long) satKey)
+Parameters: 
+	satKey: The unique key of the satellite to be removed
+Return Value:
+	0 if the satellite is removed successfully, non-0 if there is an error.
+=======================================================================================
+  6. ExtEphRemoveAllSats
+Purpose:
+	 Removes all EXTEPHEMS from memory
+Syntax: 
+	int ExtEphRemoveAllSats()
+Parameters: 
+	None
+Return Value:
+	0 if all satellites are removed successfully from memory, non-0 if there is an error
+=======================================================================================
+  7. ExtEphGetCount
+Purpose:
+	 Returns the number of EXTEPHEM's currently loaded
+	 See ExtEphGetLoaded for example.
+	 This function is useful for dynamically allocating memory for the array that is passed to the function ExtEphGetLoaded().
+Syntax: 
+	int ExtEphGetCount()
+Parameters: 
+	None
+Return Value:
+	The number of EXTEPHEM's currently loaded
+=======================================================================================
+  8. ExtEphGetLoaded
+Purpose:
+	 Retrieves all of the currently loaded satKeys. These satKeys can be used to access the external ephemeris data for the EXTEPHEM's
+	 It is recommended that ExtEphGetCount() is used to count how many satellites are currently loaded in the ExtEphem DLL's binary tree. 
+	 The users then use this number to dynamically allocate the satKeys array and pass it to this function.
+	 
+	 If the users prefer to pass a static array to the function, ensure that it is big enough to store all the satKeys in memory.
+Syntax: 
+	void ExtEphGetLoaded((in-Integer) order, (out-Long[*]) satKeys)
+Parameters: 
+	order: Specifies the order in which the satKeys should be returned: 0=ascending, 1=descending, 2=order as loaded
+	satKeys: The array in which to store the satKeys
+=======================================================================================
+  9. ExtEphAddSat
+Purpose:
+	 Allows for an EXTEPHEM to be added to memory without using an input file. The function creates a place holder for an EXTEPHEM
+	 If the same satellite (same satNum and epochDs50UTC) was previously added to the ExtEphem DLL's binary tree, 
+	 the function will generate a new unique satKey. This is very useful when the users want to compare ephemerides 
+	 of the same satellite number and same epoch time from different sources. 
+Syntax: 
+	__int64 ExtEphAddSat((in-Integer) satNum, (in-Double) epochDs50UTC, (in-Double) ae, (in-Double) ke, (in-Integer) coordSys)
+Parameters: 
+	satNum: Satellite number
+	epochDs50UTC: Epoch time in ds50UTC
+	ae: Mean Earth radius (km)
+	ke: Earth gravitational constant
+	coordSys: Ephemeris coordinate system (see COORD_?)
+Return Value:
+	The satKey of the newly added EXTEPHEM on success, a negative value on error
+=======================================================================================
+ 10. ExtEphAddSatEphem
+Purpose:
+	 Adds an ephemeris point to the end of an EXTEPHEM's set of ephemeris points
+	 The new ephemeris point will only be added to the array if its time is greater than the times of all points already in the array. 
+	 Therefore, the array is always in sorted order (t1 < t2 <... < tn).
+Syntax: 
+	int ExtEphAddSatEphem((in-Long) satKey, (in-Double) ds50UTC, (in-Double[3]) pos, (in-Double[3]) vel, (in-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: Epoch time in ds50UTC
+	pos: Position at cuurent time (km)
+	vel: Velocity at current time (km/sec)
+	revNum: The ephemeris point revolution number
+Return Value:
+	0 if the ephemeris point is added successfully to the requested satellite, non-0 if there is an error
+=======================================================================================
+ 11. ExtEphAddSatEphemCovMtx
+Purpose:
+	 Adds an ephemeris point (including covariance matrix) to the end of an EXTEPHEM's set of ephemeris points
+Syntax: 
+	int ExtEphAddSatEphemCovMtx((in-Long) satKey, (in-Double) ds50UTC, (in-Double[3]) pos, (in-Double[3]) vel, (in-Integer) revNum, (in-Double[21]) covUVW)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: Epoch time in ds50UTC
+	pos: Position at cuurent time (km)
+	vel: Velocity at current time (km/sec)
+	revNum: The ephemeris point revolution number
+	covUVW: The covariance matrix in vector format (21 terms in one-dimensional array)
+Return Value:
+	0 if the ephemeris point is added successfully to the requested satellite, non-0 if there is an error
+=======================================================================================
+ 12. ExtEphAddSatEphemExt
+Purpose:
+	 Adds an ephemeris point (including covariance matrix) to the end of an EXTEPHEM's set of ephemeris points
+Syntax: 
+	int ExtEphAddSatEphemExt((in-Long) satKey, (in-Double) ds50UTC, (in-Double[3]) pos, (in-Double[3]) vel, (in-Integer) revNum, (in-Double[128]) extArr)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: Epoch time in ds50UTC
+	pos: Position at cuurent time (km)
+	vel: Velocity at current time (km/sec)
+	revNum: The ephemeris point revolution number
+	extArr: The extra array: 1-21=lower triangle matrix, 22-128=future use
+Return Value:
+	0 if the ephemeris point is added successfully to the requested satellite, non-0 if there is an error
+=======================================================================================
+ 13. ExtEphAddSatFrFile
+Purpose:
+	 Loads satellite data from an external ephemeris file (any valid external ephemeris file formats) and returns a satKey on success
+Syntax: 
+	__int64 ExtEphAddSatFrFile((in-Character[512]) extEphFile)
+Parameters: 
+	extEphFile: The name of the file containing external ephemeris data to be loaded
+Return Value:
+	The satKey of the newly added EXTEPHEM on success, a zero or negative value on error
+=======================================================================================
+ 14. ExtEphGetNumPts
+Purpose:
+	 Gets number of epehemeris points associated with satKey
+Syntax: 
+	int ExtEphGetNumPts((in-Long) satKey, (out-Integer) numOfPts)
+Parameters: 
+	satKey: The satellite's unique key
+	numOfPts: Number of ephemeris points
+Return Value:
+	0 if the data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 15. ExtEphGetAllFields
+Purpose:
+	 Retrieves all data for an EXTEPHEM with a single function call
+Syntax: 
+	int ExtEphGetAllFields((in-Long) satKey, (out-Integer) satNum, (out-Character[8]) satName, (out-Character[128]) recName, (out-Double) epochDs50UTC, (out-Double) ae, (out-Double) ke, (out-Double[3]) pos, (out-Double[3]) vel, (out-Integer) coordSys, (out-Integer) numOfPts, (out-Character[512]) fileLoc)
+Parameters: 
+	satKey: The satellite's unique key
+	satNum: Satellite number
+	satName: Satellite international designator
+	recName: Record name (default to source file path, fileLoc)
+	epochDs50UTC: Satellite epoch time in ds50UTC
+	ae: Mean Earth radius (km)
+	ke: Earth gravitational constant (er**3/2 per minute)
+	pos: Position at epoch (km)
+	vel: Velocity at epoch (km/s)
+	coordSys: Ephemeris coordinate (see COORD_?)
+	numOfPts: Number of ephemeris points
+	fileLoc: File location
+Return Value:
+	0 if the data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 16. ExtEphGetField
+Purpose:
+	 Retrieves the value of a specific field of an EXTEPHEM
+	 
+	 When using xf_ExtEph = 11, the input coordinate system is returned as an integer value.  The table below shows the coordinate system values:
+	 
+	 table
+	 
+	 Value
+	 Coordinate System
+	 
+	 1  ECI TEME of DATE
+	 2  MEME of J2K
+	 3  Earth Fixed Greenwich (EFG)
+	 4  Earch Centered Rotation (ECR)
+	 100Invalid
+	    
+Syntax: 
+	int ExtEphGetField((in-Long) satKey, (in-Integer) xf_ExtEph, (out-Character[512]) valueStr)
+Parameters: 
+	satKey: The satellite's unique key
+	xf_ExtEph: Predefined number specifying which field to retrieve (see XF_EXTEPH_?)
+	valueStr: A string to contain the value of the requested field
+Return Value:
+	0 if the EXTEPHEM data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 17. ExtEphSetField
+Purpose:
+	 Updates the value of a specific field of an EXTEPHEM
+Syntax: 
+	int ExtEphSetField((in-Long) satKey, (in-Integer) xf_ExtEph, (in-Character[512]) valueStr)
+Parameters: 
+	satKey: The satellite's unique key
+	xf_ExtEph: Predefined number specifying which field to set (see XF_EXTEPH_?)
+	valueStr: The new value of the specified field, expressed as a string
+Return Value:
+	0 if the EXTEPHEM data is successfully updated, non-0 if there is an error
+=======================================================================================
+ 18. ExtEphStartEndTime
+Purpose:
+	 Retrieves the times (in days since 1950 UTC) of the start and end ephemeris points of the EXTEPHEM  
+Syntax: 
+	int ExtEphStartEndTime((in-Long) satKey, (out-Double) startDs50UTC, (out-Double) endDs50UTC)
+Parameters: 
+	satKey: The satellite's unique key
+	startDs50UTC: The ephemeris start time (first ephemeris point) in days since 1950, UTC
+	endDs50UTC: The ephemeris end time (last ephemeris point) in days since 1950, UTC
+Return Value:
+	0 if successful, non-0 if there is an error
+=======================================================================================
+ 19. ExtEphGetEphemeris
+Purpose:
+	 Retrieves the data for a specific point within an EXTEPHEM
+	 It is important to know that the array subscript starts at one (not zero).
+Syntax: 
+	int ExtEphGetEphemeris((in-Long) satKey, (in-Integer) index, (out-Double) ds50UTC, (out-Double[3]) pos, (out-Double[3]) vel, (out-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	index: The position number of the ephemeris point to be retrieved (1=first point)
+	ds50UTC: The resulting time in ds50UTC
+	pos: The resulting position (km)
+	vel: The resulting velocity (km/s)
+	revNum: The resulting revolution number
+Return Value:
+	0 if the ephemeris data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 20. ExtEphGetCovMtx
+Purpose:
+	 Retrieves the data (including the covariance matrix) for a specific point within an EXTEPHEM
+Syntax: 
+	int ExtEphGetCovMtx((in-Long) satKey, (in-Integer) index, (out-Double) ds50UTC, (out-Double[3]) pos, (out-Double[3]) vel, (out-Integer) revNum, (out-Double[6, 6]) covMtx)
+Parameters: 
+	satKey: The satellite's unique key
+	index: The position number of the ephemeris point to be retrieved (1=first point)
+	ds50UTC: The resulting time in ds50UTC
+	pos: The resulting position (km)
+	vel: The resulting velocity (km/s)
+	revNum: The resulting revolution number
+	covMtx: The 6x6 covariance matrix
+Return Value:
+	0 if the ephemeris data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 21. ExtEphMse
+Purpose:
+	 Interpolates the external ephemeris data to the requested time in minutes since the satellite's epoch time
+	 The coordinate system of the output position and velocity is the same as the input ephemerides.
+Syntax: 
+	int ExtEphMse((in-Long) satKey, (in-Double) mse, (out-Double) ds50UTC, (out-Double[3]) pos, (out-Double[3]) vel, (out-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	mse: The requested time in minutes since the satellite's epoch time
+	ds50UTC: The resulting time in ds50UTC
+	pos: The resulting position (km)
+	vel: The resulting velocity (km/s)
+	revNum: The resulting revolution number
+Return Value:
+	0 if the external ephemeris data is successfully interpolated, non-0 if there is an error
+=======================================================================================
+ 22. ExtEphMseCovMtx
+Purpose:
+	 Interpolates the external ephemeris data to the requested time in minutes since the satellite's epoch time
+Syntax: 
+	int ExtEphMseCovMtx((in-Long) satKey, (in-Double) mse, (out-Double) ds50UTC, (out-Double[3]) pos, (out-Double[3]) vel, (out-Integer) revNum, (out-Double[6, 6]) covMtx)
+Parameters: 
+	satKey: The satellite's unique key
+	mse: The requested time in minutes since the satellite's epoch time
+	ds50UTC: The resulting time in ds50UTC
+	pos: The resulting position (km)
+	vel: The resulting velocity (km/s)
+	revNum: The resulting revolution number
+	covMtx: The 6x6 covariance matrix
+Return Value:
+	0 if the external ephemeris data is successfully interpolated, non-0 if there is an error
+=======================================================================================
+ 23. ExtEphDs50UTC
+Purpose:
+	 Interpolates the external ephemeris data to the requested time in days since 1950, UTC
+	 The coordinate system of the output position and velocity is the same as the input ephemerides.
+Syntax: 
+	int ExtEphDs50UTC((in-Long) satKey, (in-Double) ds50UTC, (out-Double) mse, (out-Double[3]) pos, (out-Double[3]) vel, (out-Integer) revNum)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The requested time in ds50UTC
+	mse: The resulting time in minutes since the satellite's epoch time
+	pos: The resulting position (km)
+	vel: The resulting velocity (km/s)
+	revNum: The resulting revolution number
+Return Value:
+	0 if the external ephemeris data is successfully interpolated, non-0 if there is an error
+=======================================================================================
+ 24. ExtEphDs50UTCCovMtx
+Purpose:
+	 Interpolates the external ephemeris data to the requested time in days since 1950, UTC
+Syntax: 
+	int ExtEphDs50UTCCovMtx((in-Long) satKey, (in-Double) ds50UTC, (out-Double) mse, (out-Double[3]) pos, (out-Double[3]) vel, (out-Integer) revNum, (out-Double[6, 6]) covMtx)
+Parameters: 
+	satKey: The satellite's unique key
+	ds50UTC: The requested time in ds50UTC
+	mse: The resulting time in minutes since the satellite's epoch time
+	pos: The resulting position (km)
+	vel: The resulting velocity (km/s)
+	revNum: The resulting revolution number
+	covMtx: The 6x6 covariance matrix
+Return Value:
+	0 if the external ephemeris data is successfully interpolated, non-0 if there is an error
+=======================================================================================
+ 25. ExtEphXten
+Purpose:
+	 Extensible routine which retrieves/interpolates external ephemeris data based on user's request
+Syntax: 
+	int ExtEphXten((in-Long) satKey, (in-Integer) xf_getEph, (in-Double) inVal, (out-Double[128]) extArr)
+Parameters: 
+	satKey: The satellite's unique key
+	xf_getEph: Input type: 1=using MSE, 2=using Ds50UTC, 3=using index (one-based)
+	inVal: Input value as indicated in the input type
+	extArr: The resulting array: 1st=mse, 2=ds50UTC, 3-5=pos, 5-8=vel, 9=revNum, 10-30=6x6 covMtx lower triangle
+Return Value:
+	0 if the external ephemeris data is successfully interpolated, non-0 if there is an error
+=======================================================================================
+ 26. ExtEphGetLine
+Purpose:
+	 This function returns a string that represents the EXTFIL= directive used to read a particular EXTEPHEM
+Syntax: 
+	int ExtEphGetLine((in-Long) satKey, (out-Character[512]) line)
+Parameters: 
+	satKey: The satellite's unique key
+	line: A string representing the directive used to read a particular EXTEPHEM
+Return Value:
+	0 if the line is retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 27. ExtEphGetSatKey
+Purpose:
+	 Returns the first satKey that matches the satNum in the EXTEPHEM binary tree
+	 This function is useful when ExtEphem DLL is used in applications that requires only one record (one EXTEPHEM entry) 
+	 for one satellite and the applications refer to that EXTEPHEM by its satellite number. 
+	 However, the Astrodynamic Standard Shared library only uses satKeys; this function helps to return the associated satKey of that satellite.
+Syntax: 
+	__int64 ExtEphGetSatKey((in-Integer) satNum)
+Parameters: 
+	satNum: Input satellite number
+Return Value:
+	The satellite's unique key
+=======================================================================================
+ 28. ExtEphFieldsToSatKey
+Purpose:
+	 Creates satKey from EXTEPHEM's satelite number and date time group string
+	 This is the proper way to reconstruct a satKey from its fields. If the users use their own routine to do this, the computed satKey might be different. 
+Syntax: 
+	__int64 ExtEphFieldsToSatKey((in-Integer) satNum, (in-Character[20]) epochDtg)
+Parameters: 
+	satNum: Input satellite number
+	epochDtg: Input date time group string: [yy]yydddhhmmss.sss or [yy]yyddd.ddddddd or DTG15, DTG17, DTG20
+Return Value:
+	The satellite's unique key
+=======================================================================================
+
+
+

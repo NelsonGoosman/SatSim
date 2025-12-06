@@ -1,0 +1,151 @@
+  1. AofInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Aof dll for use in the program
+Syntax: 
+	int AofInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if Aof.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. AofGetInfo
+Purpose:
+	 Returns information about the current version of Aof.dll. The information is placed in the string parameter you pass in
+Syntax: 
+	void AofGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Aof.dll.
+=======================================================================================
+  3. AofLoadFile
+Purpose:
+	 Loads Aof-related parameters (1P/2P/3P cards, and Aof parameter free format) from an input text file
+Syntax: 
+	int AofLoadFile((in-Character[512]) aofInputFile)
+Parameters: 
+	aofInputFile: The name of the file containing Aof-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. AofLoadFileAll
+Purpose:
+	 Loads Aof-related parameters from an input text file
+Syntax: 
+	int AofLoadFileAll((in-Character[512]) aofInputFile)
+Parameters: 
+	aofInputFile: The name of the file containing Aof-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  5. AofLoadCard
+Purpose:
+	 Loads a single Aof-typed card
+Syntax: 
+	int AofLoadCard((in-Character[512]) card)
+Parameters: 
+	card: Aof-type input card
+Return Value:
+	0 if the input card is read successfully, non-0 if there is an error
+=======================================================================================
+  6. AofGetDataFrInputFiles
+Purpose:
+	 This function retrieves various AOF input data being entered from input flat files (and/or various AOF input cards)
+Syntax: 
+	void AofGetDataFrInputFiles((out-Double[16]) xa_aofCtrl, (out-Integer) numOfInpSats, (out-Integer[100]) aofInpSats, (out-Integer) numOfMissions, (out-Double[100, 16]) xa_aofSen, (out-Integer) numOfAreas, (out-Double[100, 16]) xa_aofArea)
+Parameters: 
+	xa_aofCtrl: AOF control parameters (see XA_AOFCTRL_?)
+	numOfInpSats: Number of satellite numbers entered in AOF P-card and/or 8P-card
+	aofInpSats: Array of satellite numbers entered via AOF P-card and/or 8P-card
+	numOfMissions: Number of satellite/mission records entered via Satellite/Mission (Satellite/Sensor) Data card
+	xa_aofSen: Array of mission records entered via Satellite/Mission (Satellite/Sensor) Data card (see XA_AOFSEN_?)
+	numOfAreas: Number of defended areas entered via Defended Area Data card
+	xa_aofArea: Array of defended areas entered via Defended Area Data card (see XA_AOFAREA_?)
+=======================================================================================
+  7. AofReset
+Purpose:
+	 This function resets all Aof control parameters previously loaded from input text files
+Syntax: 
+	void AofReset()
+Parameters: 
+	None
+=======================================================================================
+  8. AofBasic
+Purpose:
+	 Computes entry/exit times of basic overflight satellite/sensor (cone) versus basic defended areas (box, circle, point)
+	 
+	 Note:  for xa_aofArea type=4 (polygon), use the AofComplex method.
+Syntax: 
+	int AofBasic((in-Double[8]) xa_aofRun, (in-Long) satKey, (in-Double[16]) xa_aofSen, (in-Double[16]) xa_aofArea, (out-Integer) numOfPasses, (out-Double[*]) xa_entExitTimes)
+Parameters: 
+	xa_aofRun: Aof run parameters (see XA_AOFRUN_?)
+	satKey: The overflight satellite's unique key
+	xa_aofSen: Satellite/mission data (see XA_AOFSEN_?)
+	xa_aofArea: Defended area data (see XA_AOFAREA_?)
+	numOfPasses: Number of passes found
+	xa_entExitTimes: Array of entry/exit times
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+  9. AofComplex
+Purpose:
+	 Computes entry/exit times of overflight satellite/sensor having complex configurations (cone, donut, butterfly, leftButterly, rightButterfly)
+	 versus defended areas defined by multiple lat lon height points (polygon)
+	 The input array llhArr is a zero-based array with latitude, longitude and altitude of each point in subsequent entries, e.g.:
+	 llhArr[0] = point 1 latitude, 
+	 llhArr[1] = point 1 longitude, 
+	 llhArr[2] = point 1 altitude, 
+	 llhArr[3] = point 2 latitude, etc.
+Syntax: 
+	int AofComplex((in-Double[8]) xa_aofRun, (in-Long) satKey, (in-Double[16]) xa_aofSen, (in-Integer) numOfLlhPts, (in-Double[360]) llhArr, (out-Integer) numOfPasses, (out-Double[*]) xa_entExitTimes)
+Parameters: 
+	xa_aofRun: Aof run parameters (see XA_AOFRUN_?)
+	satKey: The overflight satellite's unique key
+	xa_aofSen: Satellite/mission data (see XA_AOFSEN_?)
+	numOfLlhPts: Number of actual input lat-lon-height points (maximum 120 points) - lat+N (deg)/lon+E (deg)/height (m)
+	llhArr: Defended area defined by array of lat-lon-height points (maximum 120 points)
+	numOfPasses: Number of passes found
+	xa_entExitTimes: Array of entry/exit times
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 10. AofGetLook
+Purpose:
+	 This function returns a look angle from the llh point to the overfly satellite at the specified time
+Syntax: 
+	int AofGetLook((in-Double) ds50TAI, (in-Double[3]) llh, (in-Long) satKey, (out-Double[8]) xa_look)
+Parameters: 
+	ds50TAI: Time, in ds50TAI, for which to compute the look angle
+	llh: Lat +N -S (deg) /lon (+E) (deg) / height (m)
+	satKey: The overflight satellite's unique key
+	xa_look: Look angle data (see XA_LOOK_?)
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 11. AofGetView
+Purpose:
+	 This function returns a view angle from the overfly satellite to a llh point at the specified time
+Syntax: 
+	int AofGetView((in-Double) ds50TAI, (in-Double[3]) llh, (in-Long) satKey, (out-Double[8]) xa_aofView)
+Parameters: 
+	ds50TAI: Time, in ds50TAI, for which to compute the view angle
+	llh: Lat +N -S (deg) /lon (+E) (deg) / height (m)
+	satKey: The overflight satellite's unique key
+	xa_aofView: View angle data (see XA_AOFVIEW_?)
+Return Value:
+	0 if successfully, non-0 if there is an error
+=======================================================================================
+ 12. AofGetDarknessLevel
+Purpose:
+	 Determines darkness level of the "defended" area at the specified time
+	 For a description of the input parameter array xa_aofArea, see AofBasic.
+Syntax: 
+	int AofGetDarknessLevel((in-Double) ds50TAI, (in-Double[16]) xa_aofArea)
+Parameters: 
+	ds50TAI: Time, in ds50TAI, for which to compute the darkness status of the defended area
+	xa_aofArea: Defended area data (see XA_AOFAREA_?)
+Return Value:
+	darkness level (see DARKLEVEL_?)
+=======================================================================================
+
+
+

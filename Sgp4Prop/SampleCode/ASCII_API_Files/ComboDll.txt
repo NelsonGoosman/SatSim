@@ -1,0 +1,245 @@
+  1. ComboInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Combo dll for use in the program
+	 If this function returns an error, it is recommended that the users stop the program immediately. The error occurs if the users forget to load and initialize all the prerequisite DLLs, as listed in the DLL Prerequisite section, before using this DLL.
+Syntax: 
+	int ComboInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if the Combo dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. ComboGetInfo
+Purpose:
+	 Returns information about the current version of Combo.dll. The information is placed in the string parameter you pass in
+	 The returned string provides information about the version number, build date, and the platform of the Combo DLL. 
+Syntax: 
+	void ComboGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Combo.dll
+=======================================================================================
+  3. ComboLoadFile
+Purpose:
+	 Loads Combo-related parameters (7P/8P/9P cards, and Combo parameter free format) from a text file
+Syntax: 
+	int ComboLoadFile((in-Character[512]) comboInputFile)
+Parameters: 
+	comboInputFile: The name of the file containing Combo-related parameters
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. ComboLoadFileAll
+Purpose:
+	 Loads Combo control parameters and all Combo related data (environment, time, elsets) from an input text file
+Syntax: 
+	int ComboLoadFileAll((in-Character[512]) comboInputFile)
+Parameters: 
+	comboInputFile: The name of the file containing Combo control parameters and all Combo related data
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  5. ComboLoadCard
+Purpose:
+	 Loads a single Combo-typed card (7P, 8P, and 9P)
+Syntax: 
+	int ComboLoadCard((in-Character[512]) card)
+Parameters: 
+	card: Combo-type input card
+Return Value:
+	0 if the input card is read successfully, non-0 if there is an error
+=======================================================================================
+  6. ComboSaveFile
+Purpose:
+	 Saves any currently loaded COMBO-related settings to a file
+	 The purpose of this function is to save the current Combo-related settings, usually used in GUI applications, for future use.
+Syntax: 
+	int ComboSaveFile((in-Character[512]) comboFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	comboFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  7. ComboGetNumOfPriSecSats
+Purpose:
+	 Returns the number of primary and secondary satellites that were entered via 7P-card, 8P-card, 9P-card, or Combo parameter free format 
+Syntax: 
+	void ComboGetNumOfPriSecSats((out-Integer) numPriSats, (out-Integer) numSecSats)
+Parameters: 
+	numPriSats: The number of primary satellites that were entered via 7P/9P cards or Combo parameter free format
+	numSecSats: The number of secondary satellites that were entered via 7P/8P cards or Combo parameter free format
+=======================================================================================
+  8. ComboGetPriSatNums
+Purpose:
+	 Returns an array of primary satellite numbers that were entered via 7P-card, 9P-card, or Combo parameter free format
+Syntax: 
+	void ComboGetPriSatNums((out-Integer[*]) priSatNums)
+Parameters: 
+	priSatNums: An array to hold the primary satellite numbers
+=======================================================================================
+  9. ComboGetSecSatNums
+Purpose:
+	 Returns an array of secondary satellite numbers that were entered via 7P-card, 8P-card, or Combo parameter free format
+Syntax: 
+	void ComboGetSecSatNums((out-Integer[*]) secSatNums)
+Parameters: 
+	secSatNums: An array to hold the secondary satellite numbers
+=======================================================================================
+ 10. ComboGet7pCard
+Purpose:
+	 Constructs Combo 7P-Card from COMBO control parameters
+Syntax: 
+	void ComboGet7pCard((out-Character[512]) combo7pCard)
+Parameters: 
+	combo7pCard: A string to hold the resulting Combo Parameter Card (7P-Card)
+=======================================================================================
+ 11. ComboGet7pAll
+Purpose:
+	 Retrieves all Combo control parameters with a single function call
+Syntax: 
+	void ComboGet7pAll((out-Integer) timeFlg, (out-Double) startTime, (out-Double) stopTime, (out-Integer) relMinFlg, (out-Integer) absMinFlg, (out-Integer) closeProxFlg, (out-Integer) relEphFlg, (out-Double) pocSigma, (out-Double) relMinLim, (out-Double) closeProxLim, (out-Double) relEphInterval, (out-Integer) prtOpt)
+Parameters: 
+	timeFlg: Input time format:	0 = Input time is in minutes since epoch (MSE),	1 = Input time is in days since 1950, UTC (ds50UTC)
+	startTime: Begin time in ds50UTC or MSE, depending on timeFlg
+	stopTime: End time  in ds50UTC or MSE, depending on timeFlg
+	relMinFlg: Control for computing relative minima: 0 = Do not compute relative minima, 1 = Compute relative minima
+	absMinFlg: Control for computing absolute minimum:	0 = Do not compute absolute minimum, 1 = Compute absolute minimum
+	closeProxFlg: Control for computing periods of close proximity: 0 = Do not compute periods of close proximity, 1 = Compute periods of close proximity
+	relEphFlg: Control for computing relative ephemeris: 0 = Do not compute relative ephemeris, 1 = Compute relative ephemeris
+	pocSigma: Probability of collision sigma
+	relMinLim: Maximum separation for relative minima (km)
+	closeProxLim: Close proximity limit
+	relEphInterval: Relative ephemeris sampling interval (min)
+	prtOpt: Print options:	0 = Relative geometry only, 1 = Position/velocity (plus option 0), 2 = Lat, lon, height (plus option 1), 3 = Relative position (plus option 2), 4 = No output
+=======================================================================================
+ 12. ComboSet7pAll
+Purpose:
+	 Sets all Combo control parameters with a single function call
+Syntax: 
+	void ComboSet7pAll((in-Integer) timeFlg, (in-Double) startTime, (in-Double) stopTime, (in-Integer) relMinFlg, (in-Integer) absMinFlg, (in-Integer) closeProxFlg, (in-Integer) relEphFlg, (in-Double) pocSigma, (in-Double) relMinLim, (in-Double) closeProxLim, (in-Double) relEphInterval, (in-Integer) prtOpt)
+Parameters: 
+	timeFlg: Input time format:	0 = Input time is in minutes since epoch (MSE),	1 = Input time is in days since 1950, UTC (ds50UTC)
+	startTime: Begin time in ds50UTC or MSE, depending on timeFlg
+	stopTime: End time  in ds50UTC or MSE, depending on timeFlg
+	relMinFlg: Control for computing relative minima: 0 = Do not compute relative minima, 1 = Compute relative minima
+	absMinFlg: Control for computing absolute minimum:	0 = Do not compute absolute minimum, 1 = Compute absolute minimum
+	closeProxFlg: Control for computing periods of close proximity: 0 = Do not compute periods of close proximity, 1 = Compute periods of close proximity
+	relEphFlg: Control for computing relative ephemeris: 0 = Do not compute relative ephemeris, 1 = Compute relative ephemeris
+	pocSigma: Probability of collision sigma
+	relMinLim: Maximum separation for relative minima (km)
+	closeProxLim: Close proximity limit
+	relEphInterval: Relative ephemeris sampling interval (min)
+	prtOpt: Print options:	0 = Relative geometry only, 1 = Position/velocity (plus option 0), 2 = Lat, lon, height (plus option 1), 3 = Relative position (plus option 2), 4 = No output
+=======================================================================================
+ 13. ComboGet7pField
+Purpose:
+	 Retrieves the value of a single Combo control parameter (7P-card)
+Syntax: 
+	void ComboGet7pField((in-Integer) xf_7P, (out-Character[512]) retVal)
+Parameters: 
+	xf_7P: Predefined number specifying which Combo control parameter to retrieve (see XF_7P_?)
+	retVal: A string to hold the value of the requested COMBO control parameter
+=======================================================================================
+ 14. ComboSet7pField
+Purpose:
+	 Sets the value of a single Combo control parameter (7P-card)
+	 See ComboGet7pField for a list of index values for the parameter xf_7P.
+Syntax: 
+	void ComboSet7pField((in-Integer) xf_7P, (in-Character[512]) valueStr)
+Parameters: 
+	xf_7P: Predefined number specifying which Combo control parameter to set (see XF_7P_?)
+	valueStr: The new value of the specified COMBO control parameter, expressed as a string
+=======================================================================================
+ 15. ComboCompPriSec
+Purpose:
+	 Returns computation of miss between orbits (COMBO) data for the specified primary and secondary satellites
+	 
+	 If absMinDs50UTC = 0 or absMinDist = 1.0E20, this means no absolute minimum found. Otherwise, the absMinDs50UTC and absMinDist are returned whether or not absMinDist is greater than the specified "Close proximity limit".
+	 
+	 Returns zero indicating the COMBO data was computed successfully. Other values indicate an error. Here is the list of possible error/warning code it returns:
+	 
+	     table
+	 
+	 Value
+	 Value Interpretation
+	 
+	 101 Primary satellite's epoch too far from the time span
+	 102 Secondary satellite's epoch too far from the time span
+	 103 Primary/secondary satellites are identical
+	 104 Secondary satellite failed perigee/apogee test
+	 105 Secondary satellite is considered a brief span
+	 106 Secondary satellite is in sustained relative geometry
+	 
+	 
+	 When the function's returned value is 108 (secondary satellite is in sustained relative geometry), the entry/exit times should be ignored.
+Syntax: 
+	int ComboCompPriSec((in-Long) priSatKey, (in-Long) secSatKey, (out-Double) absMinDs50UTC, (out-Double) absMinDist, (out-Double[1000]) relMinDs50UTCs, (out-Integer) numOfRelMins, (out-Double[1000]) entryDs50UTCs, (out-Double[1000]) exitDs50UTCs, (out-Integer) numOfEntryExits)
+Parameters: 
+	priSatKey: The primary satellite's unique key
+	secSatKey: The secondary satellite's unique key
+	absMinDs50UTC: Time (in days since 1950, UTC) when the primary and secondary satellites are in closest approach (absolute minimum)
+	absMinDist: Absolute minimum distance (km) between primary and secondary satellites obtained at the time absMinDs50UTC
+	relMinDs50UTCs: Times (in days since 1950, UTC) when  the primary and secondary satellites are at relative minima
+	numOfRelMins: Number of relative minima found during the requested time span
+	entryDs50UTCs: Times (in days since 1950, UTC) when the primary and secondary satellites approach the distance as specified in the "Maximum separation for relative minima"
+	exitDs50UTCs: Times (in days since 1950, UTC) when the primary and secondary satellites leave the distance as specified in the "Maximum separation for relative minima"
+	numOfEntryExits: Number of times when the primary and secondary satellites enter and exit the "Maximum separation for relative minima"
+Return Value:
+	0 if the COMBO data was computed successfully, non-0 if there is an error
+=======================================================================================
+ 16. ComboCompPriSec_MT
+Purpose:
+	 Returns computation of miss between orbits (COMBO) data for the specified primary and secondary satellites
+	 This function is similar to ComboCompPriSec but allows the user to enter separate COMBO parameters for each call which is suitable for multithread application
+Syntax: 
+	int ComboCompPriSec_MT((in-Double[16]) xa_cb_parms, (in-Long) priSatKey, (in-Long) secSatKey, (out-Double) absMinDs50UTC, (out-Double) absMinDist, (out-Double[1000]) relMinDs50UTCs, (out-Integer) numOfRelMins, (out-Double[1000]) entryDs50UTCs, (out-Double[1000]) exitDs50UTCs, (out-Integer) numOfEntryExits)
+Parameters: 
+	xa_cb_parms: Combo control parameters (see XA_CB_PARMS_?)
+	priSatKey: The primary satellite's unique key
+	secSatKey: The secondary satellite's unique key
+	absMinDs50UTC: Time (in days since 1950, UTC) when the primary and secondary satellites are in closest approach (absolute minimum)
+	absMinDist: Absolute minimum distance (km) between primary and secondary satellites obtained at the time absMinDs50UTC
+	relMinDs50UTCs: Times (in days since 1950, UTC) when  the primary and secondary satellites are at relative minima
+	numOfRelMins: Number of relative minima found during the requested time span
+	entryDs50UTCs: Times (in days since 1950, UTC) when the primary and secondary satellites approach the distance as specified in the "Maximum separation for relative minima"
+	exitDs50UTCs: Times (in days since 1950, UTC) when the primary and secondary satellites leave the distance as specified in the "Maximum separation for relative minima"
+	numOfEntryExits: Number of times when the primary and secondary satellites enter and exit the "Maximum separation for relative minima"
+Return Value:
+	0 if the COMBO data was computed successfully, non-0 if there is an error
+=======================================================================================
+ 17. ComboPOC
+Purpose:
+	 Computes probability of collision between a primary and secondary satellite
+Syntax: 
+	int ComboPOC((in-Double[3]) priSatPos, (in-Double[3]) priSatVel, (in-Double[3, 3]) priSatCov, (in-Double) priSatRad, (in-Double[3]) secSatPos, (in-Double[3]) secSatVel, (in-Double[3, 3]) secSatCov, (in-Double) secSatRad, (in-Integer) xf_CovType, (out-Double[4]) xa_cb_poc)
+Parameters: 
+	priSatPos: The primary satellite's ECI position vector (km)
+	priSatVel: The primary satellite's ECI velocity vector (km/s)
+	priSatCov: The primary satellite's 3x3 covariance matrix
+	priSatRad: The primary satellite's effective radius (m)
+	secSatPos: The secondary satellite's ECI position vector (km)
+	secSatVel: The secondary satellite's ECI velocity vector (km/s)
+	secSatCov: The secondary satellite's 3x3 covariance matrix
+	secSatRad: The secondary satellite's effective radius (m)
+	xf_CovType: Input covariance type (see XF_COVTYPE_?)
+	xa_cb_poc: The resulting probability of collision (see XA_CB_POC_?)
+Return Value:
+	0 if the probability of collision is computed successfully, non-0 if there is an error
+=======================================================================================
+ 18. ComboCSMPOC
+Purpose:
+	 Computes probability of collision using data from a CSM/OCM file
+Syntax: 
+	int ComboCSMPOC((in-Character[512]) csmFile, (in-Double) sumR, (out-Double[4]) xa_cb_poc)
+Parameters: 
+	csmFile: Ocm or csm file
+	sumR: Hard-body radius (R1 + R2) (m), if not zero, overwrite values in csm's
+	xa_cb_poc: The resulting probability of collision (see XA_CB_POC_?)
+Return Value:
+	0 if the POC was computed successfully, non-0 if there is an error
+=======================================================================================
+
+
+

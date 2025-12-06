@@ -1,0 +1,579 @@
+  1. SensorInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Sensor DLL for use in the program
+	 If this function returns an error, it is recommended that the users stop the program immediately. 
+	 The error occurs if the users forget to load and initialize all the prerequisite dlls, as listed 
+	 in the DLL Prerequisite section, before using this DLL.
+Syntax: 
+	int SensorInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if Sensor.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. SensorGetInfo
+Purpose:
+	 Returns information about the current version of Sensor DLL. 
+	 The information is placed in the string parameter passed in.
+	 The returned string provides information about the version number, build date, and the platform of the Sensor DLL.
+Syntax: 
+	void SensorGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Sensor.dll
+=======================================================================================
+  3. SensorLoadFile
+Purpose:
+	 Loads sensor data, contained in a text file, into the set of loaded sensors
+	 The users can use this function repeatedly to load sensor data from different input files. 
+	 However, only unique senKeys are stored in the binary tree.  New sensor data will overwrite the existing data. 
+	 
+	 Sensor data can be included directly in the main input file or they can be read from a separate file 
+	 identified with "SENFIL=[pathname\filename]".
+	 
+	 This function only reads sensor data from the main input file or the file identified with SENFIL in the input file. 
+	 It won't read anything else.
+Syntax: 
+	int SensorLoadFile((in-Character[512]) senFile)
+Parameters: 
+	senFile: The name of the file containing sensor data
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. SensorLoadCard
+Purpose:
+	 Loads a single sensor-typed card
+Syntax: 
+	int SensorLoadCard((in-Character[512]) card)
+Parameters: 
+	card: Any single sensor-typed card
+Return Value:
+	0 if the input card is read successfully, non-0 if there is an error
+=======================================================================================
+  5. SensorSaveFile
+Purpose:
+	 Saves the currently loaded sensor data to a file
+	 If the users call this routine immediately after the SensorLoadFile(). 
+	 The sensor data contents in the two file should be the same (minus duplicated sensors or bad sensors).
+	 
+	 The purpose of this function is to save the current state of the loaded sensors, usually used in GUI applications, for future use.
+Syntax: 
+	int SensorSaveFile((in-Character[512]) sensorFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	sensorFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  6. SensorRemove
+Purpose:
+	 Removes a sensor, represented by the senKey, from the set of currently loaded sensors
+	 If the users enter an invalid senKey - a non-existing senKey, the function will return a non-zero value indicating an error.
+Syntax: 
+	int SensorRemove((in-Long) senKey)
+Parameters: 
+	senKey: The sensor's unique key
+Return Value:
+	0 if the sensor is successfully removed, non-0 if there is an error
+=======================================================================================
+  7. SensorRemoveAll
+Purpose:
+	 Removes all currently loaded sensors from memory
+	 The function returns zero if all the loaded sensors are removed successfully from the SENSOR DLL's binary tree. Other values indicate an error.
+Syntax: 
+	int SensorRemoveAll()
+Parameters: 
+	None
+Return Value:
+	0 if all the loaded sensors are removed successfully, non-0 if there is an error
+=======================================================================================
+  8. SensorGetCount
+Purpose:
+	 Returns the number of sensors currently loaded
+	 See SensorGetLoaded for example.
+	 This function is useful for dynamically allocating memory for the array that is passed to the function SensorGetLoaded().
+Syntax: 
+	int SensorGetCount()
+Parameters: 
+	None
+Return Value:
+	the number of sensors currently loaded
+=======================================================================================
+  9. SensorGetLoaded
+Purpose:
+	 Retrieves all of the currently loaded senKeys. 
+	 These senKeys can be used to access the internal data for the sensors.
+	 It is recommended that SensorGetCount() is used to count how many sensors are currently loaded in the SENSOR DLL's binary tree. 
+	 The user can then use this number to dynamically allocate the senKeys array and pass it to this function. 
+	 
+	 If the users prefer to pass a static array to the function, make sure it is big enough to store all the senKeys in memory.
+Syntax: 
+	void SensorGetLoaded((in-Integer) order, (out-Long[*]) senKeys)
+Parameters: 
+	order: Specifies the order in which the senKeys should be returned:0=Sort in ascending order, 1=Sort in descending order, 2=Sort in the order in which the senKeys were loaded in memory
+	senKeys: The array in which to store the senKeys
+=======================================================================================
+ 10. SensorGetLocAll
+Purpose:
+	 Retrieves sensor location data for a sensor
+Syntax: 
+	int SensorGetLocAll((in-Long) senKey, (out-Double) astroLat, (out-Double) astroLon, (out-Double[3]) senPos, (out-Character[24]) senDesc, (out-Integer) orbSatNum, (out-Character) secClass)
+Parameters: 
+	senKey: The sensor's unique key
+	astroLat: Astronomical Latitude (deg): astroLat[-90, 90], (+ = North; - = South)
+	astroLon: Astronomical Longitude (deg): astroLon[-360, 360], (+ = West; - = East)
+	senPos: Sensor XYZ geocentric position (meters)
+	senDesc: Sensor location description
+	orbSatNum: For orbiting sensors, this is the associated satellite number. For ground sensors, orbSatNum = 0
+	secClass: Sensor classification: U = Unclassified, C = Confidential, S = Secret
+Return Value:
+	0 if all sensor location data fields are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 11. SensorSetLocAll
+Purpose:
+	 Adds/updates sensor location data (non DMA) for a sensor using individually provided field values
+	 This function is shared between ground sensors and orbiting sensors. The users need to provide the proper data fields for each sensor type.
+	 
+	 If the function is invoked with a senKey that already exists in the SENSOR DLL's binary tree, the senKey's associated data will be updated with the provided data.
+	 
+	 If it is an orbiting sensor, the users need to provide the associated satellite number.
+Syntax: 
+	int SensorSetLocAll((in-Long) senKey, (in-Double) astroLat, (in-Double) astroLon, (in-Double[3]) senPos, (in-Character[24]) senDesc, (in-Integer) orbSatNum, (in-Character) secClass)
+Parameters: 
+	senKey: The sensor's unique key
+	astroLat: Astronomical Latitude (deg): astroLat[-90, 90], (+ = North; - = South)
+	astroLon: Astronomical Longitude (deg): astroLon[-360, 360], (+ = West; - = East)
+	senPos: Sensor XYZ geocentric position (meters)
+	senDesc: Sensor location description
+	orbSatNum: For orbiting sensors, this is the associated satellite number. For ground sensors, orbSatNum = 0
+	secClass: Sensor classification: U = Unclassified, C = Confidential, S = Secret
+Return Value:
+	0 if the sensor location data is added/updated successfully, non-0 if there is an error
+=======================================================================================
+ 12. SensorGetLocField
+Purpose:
+	 Retrieves the value of an individual field of sensor location data
+	 
+	 Make sure to use the appropriate field index for ground sensors and orbiting sensors.
+	 
+	 The table below shows the values for the xf_SenLoc parameter:
+	 
+	 table
+	 
+	 Index
+	 Index Interpretation
+	 
+	 1Sensor number
+	 2Sensor astronomical latitude (deg)
+	 3Sensor astronomical longitude (deg)
+	 4Sensor position X (km)
+	 5Sensor position Y (km)
+	 6Sensor position Z (km)
+	 7Sensor description
+	 8Orbiting sensor's number (satNum)   
+	 9Sensor classification    
+	    
+Syntax: 
+	int SensorGetLocField((in-Long) senKey, (in-Integer) xf_SenLoc, (out-Character[512]) strValue)
+Parameters: 
+	senKey: The sensor's unique key
+	xf_SenLoc: Predefined number specifying which field to retrieve
+	strValue: A string to contain the value of the requested field
+Return Value:
+	0 if the sensor location data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 13. SensorSetLocField
+Purpose:
+	 Updates the value of an individual field of sensor location data
+	 See SensorGetLocField for a description of the xf_SenLoc values.
+	 The set value type was intentionally chosen as a character string because it allows the users to set value for different data types.
+	 
+	 Make sure to use the appropriate field index for ground sensors and orbiting sensors.
+Syntax: 
+	int SensorSetLocField((in-Long) senKey, (in-Integer) xf_SenLoc, (in-Character[512]) strValue)
+Parameters: 
+	senKey: The sensor's unique key
+	xf_SenLoc: Predefined number specifying which field to retrieve
+	strValue: The new value of the specified field, expressed as a string
+Return Value:
+	0 if the sensor location data is successfully updated, non-0 if there is an error
+=======================================================================================
+ 14. SensorGet1L
+Purpose:
+	 Retrieves sensor limits data
+	 This function is shared between ground sensors and orbiting sensors. Make sure to interpret the data correctly.
+Syntax: 
+	int SensorGet1L((in-Long) senKey, (out-Character) viewType, (out-Character) obsType, (out-Integer) rngUnits, (out-Double) maxRngLim, (out-Character) boresight1, (out-Double) elLim1, (out-Double) elLim2, (out-Double) azLim1, (out-Double) azLim2, (out-Double) interval, (out-Integer) visFlg, (out-Integer) rngLimFlg, (out-Integer) maxPPP, (out-Double) minRngLim, (out-Integer) plntryRes, (out-Double) rrLim)
+Parameters: 
+	senKey: The sensor's unique key
+	viewType: Sensor viewing type
+	obsType: Sensor observation type
+	rngUnits: Units of range and range rate: 0=km, km/sec, 1=nm, nm/sec
+	maxRngLim: Maximum observable range limit (km)
+	boresight1: Orbiting sensor boresight1 vector
+	elLim1: Elevation limit #1 (low, deg) OR orbiting sensor off-boresight angle
+	elLim2: Elevation limit #2 (high, deg) OR orbiting sensor off-boresight angle
+	azLim1: Azimuth limit #1 (left, deg) OR orbiting sensor clock angle
+	azLim2: Azimuth limit #2 (right, deg) OR orbiting sensor clock angle
+	interval: Ouput interval (min)
+	visFlg: Visual pass control flag
+	rngLimFlg: Range limits control flag
+	maxPPP: Max number of points per pass (0=unlimited)
+	minRngLim: Minimum observable range limit (km)
+	plntryRes: Orbiting sensor planetary restrictions
+	rrLim: Range rate/relative velocity limit (km/sec)
+Return Value:
+	0 if all sensor limits data fields are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 15. SensorSet1L
+Purpose:
+	 Adds/updates sensor limits data (non DMA) via individually provided field values
+	 This function is shared between ground sensors and orbiting sensors. The users need to provide the proper data fields for each sensor type.
+	 
+	 If the function is invoked with a senKey that already exists in the SENSOR DLL's binary tree, the senKey's associated data will be updated with the provided data.
+	 
+	 If it is an orbiting sensor, the users need to provide the associated satellite number.
+Syntax: 
+	int SensorSet1L((in-Long) senKey, (in-Character) viewType, (in-Character) obsType, (in-Integer) rngUnits, (in-Double) maxRngLim, (in-Character) boresight1, (in-Double) elLim1, (in-Double) elLim2, (in-Double) azLim1, (in-Double) azLim2, (in-Double) interval, (in-Integer) visFlg, (in-Integer) rngLimFlg, (in-Integer) maxPPP, (in-Double) minRngLim, (in-Integer) plntryRes, (in-Double) rrLim)
+Parameters: 
+	senKey: The sensor's unique key
+	viewType: Sensor viewing type
+	obsType: Sensor observation type
+	rngUnits: Units of range and range rate: 0=km, km/sec, 1=nm, nm/sec
+	maxRngLim: Maximum observable range limit (km)
+	boresight1: Orbiting sensor boresight1 vector
+	elLim1: Elevation limit #1 (low, deg) OR orbiting sensor off-boresight angle
+	elLim2: Elevation limit #2 (high, deg) OR orbiting sensor off-boresight angle
+	azLim1: Azimuth limit #1 (left, deg) OR orbiting sensor clock angle
+	azLim2: Azimuth limit #2 (right, deg) OR orbiting sensor clock angle
+	interval: Ouput interval (min)
+	visFlg: Visual pass control flag
+	rngLimFlg: Range limits control flag
+	maxPPP: Max number of points per pass (0=unlimited)
+	minRngLim: Minimum observable range limit (km)
+	plntryRes: Orbiting sensor planetary restrictions
+	rrLim: Range rate/relative velocity limit (km/sec)
+Return Value:
+	0 if the sensor limits data is added/updated successfully, non-0 if there is an error
+=======================================================================================
+ 16. SensorGet2L
+Purpose:
+	 Retrieves additional sensor limits data
+	 This function is shared between ground sensors and orbiting sensors. Make sure to interpret the data correctly.
+Syntax: 
+	int SensorGet2L((in-Long) senKey, (out-Character) boresight2, (out-Double) elLim3, (out-Double) elLim4, (out-Double) azLim3, (out-Double) azLim4, (out-Integer) earthBckgrnd, (out-Double) earthLimb, (out-Double) solarXAngle, (out-Double) lunarXAngle, (out-Double) minIllum, (out-Double) twilit)
+Parameters: 
+	senKey: The sensor's unique key
+	boresight2: Orbiting sensor boresight2 vector
+	elLim3: Elevation limit #3 (low, deg) OR orbiting sensor off-boresight angle
+	elLim4: Elevation limit #4 (high, deg) OR orbiting sensor off-boresight angle
+	azLim3: Azimuth limit #3 (left, deg) OR orbiting sensor clock angle
+	azLim4: Azimuth limit #4 (right, deg) OR orbiting sensor clock angle
+	earthBckgrnd: Flag; if set, allow orb sensor to view satellite against earth background
+	earthLimb: Orbiting sensor earth limb exclusion distance (km)
+	solarXAngle: Orbiting sensor solar exclusion angle (deg)
+	lunarXAngle: Orbiting sensor lunar exclusion angle (deg)
+	minIllum: Orbiting sensor minimum illumination angle (deg)
+	twilit: Ground site twilight offset angle (deg)
+Return Value:
+	0 if all optional/additional sensor limits data fields are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 17. SensorSet2L
+Purpose:
+	 Adds/updates additional sensor limits data
+	 This function is shared between ground sensors and orbiting sensors. The users need to provide the proper data fields for each sensor type.
+	 
+	 If the function is invoked with a senKey that already exists in the SENSOR DLL's binary tree, the senKey's associated data will be updated with the provided data.	
+Syntax: 
+	int SensorSet2L((in-Long) senKey, (in-Character) boresight2, (in-Double) elLim3, (in-Double) elLim4, (in-Double) azLim3, (in-Double) azLim4, (in-Integer) earthBckgrnd, (in-Double) earthLimb, (in-Double) solarXAngle, (in-Double) lunarXAngle, (in-Double) minIllum, (in-Double) twilit)
+Parameters: 
+	senKey: The sensor's unique key
+	boresight2: Orbiting sensor boresight2 vector
+	elLim3: Elevation limit #3 (low, deg) OR orbiting sensor off-boresight angle
+	elLim4: Elevation limit #4 (high, deg) OR orbiting sensor off-boresight angle
+	azLim3: Azimuth limit #3 (left, deg) OR orbiting sensor clock angle
+	azLim4: Azimuth limit #4 (right, deg) OR orbiting sensor clock angle
+	earthBckgrnd: Flag; if set, allow orb sensor to view satellite against earth background
+	earthLimb: Orbiting sensor earth limb exclusion distance (km)
+	solarXAngle: Orbiting sensor solar exclusion angle (deg)
+	lunarXAngle: Orbiting sensor lunar exclusion angle (deg)
+	minIllum: Orbiting sensor minimum illumination angle (deg)
+	twilit: Ground site twilight offset angle (deg)
+Return Value:
+	0 if the optional/additional sensor limits data is added/updated successfully, non-0 if there is an error
+=======================================================================================
+ 18. SensorGetLimField
+Purpose:
+	 Retrieves an individual field of sensor limits data
+	 
+	 Make sure to use the appropriate field index for ground sensors and orbiting sensors.
+	 
+	 The table below shows the values for the xf_SenLim parameter:
+	 
+	 table
+	 
+	 Index
+	 Index Interpretation
+	 
+	 11 Sensor view type
+	 12 Sensor observation type
+	 13 Unit on range/range rate
+	 14 Max observable range (km)
+	 15 Min observable range (km)
+	 16 Output interval (min)
+	 17 Visual pass control flag
+	 18 Range limit control flag 
+	 19 Max number of points per pass
+	 20 Range rate/relative velocity limit (km/sec)
+	 31 Elevation limits (deg) 1, 2, 3, 4 or Sensor off-boresight angle (deg)
+	 32 
+	 33 
+	 34 
+	 35 Azimuth limits (deg) 1, 2,3, 4 or Sensor clock angle (deg)
+	 36 
+	 37 
+	 38 
+	 52 Orbiting sensor planetary restriction
+	 53 Orbiting sensor boresight vector 1
+	 54 Orbiting sensor boresight vector 2
+	 55 Allow orbiting sensor to view sat against earth background
+	 56 Orbiting sensor earth limb exclusion distance (km)
+	 57 Orbiting sensor solar exclusion angle (deg)   
+	 58 Orbiting sensor lunar exclusion angle (deg)
+	 59 Orbiting sensor min illumination angle (deg)
+	 60 Ground site twilight offset angle (deg)    
+	    
+Syntax: 
+	int SensorGetLimField((in-Long) senKey, (in-Integer) xf_SenLim, (out-Character[512]) strValue)
+Parameters: 
+	senKey: The sensor's unique key
+	xf_SenLim: Predefined number specifying which field to retrieve
+	strValue: A string to contain the value of the requested field
+Return Value:
+	0 if the sensor limits data is retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 19. SensorSetLimField
+Purpose:
+	 Updates an individual field of sensor limits data
+	 See SensorGetLimField for a description of the xf_SenLim parameter.
+	 The set value type was intentionally chosen as a character string because it allows the users to set value for different data types.
+	 
+	 Make sure to use the appropriate field index for ground sensors and orbiting sensors.
+Syntax: 
+	int SensorSetLimField((in-Long) senKey, (in-Integer) xf_SenLim, (in-Character[512]) strValue)
+Parameters: 
+	senKey: The sensor's unique key
+	xf_SenLim: Predefined number specifying which field to retrieve
+	strValue: The new value of the specified field, expressed as a string
+Return Value:
+	Returns zero indicating the sensor limits data has been successfully updated. Other values indicate an error
+=======================================================================================
+ 20. SensorGetBS
+Purpose:
+	 Retrieves sensor sigma/bias data
+Syntax: 
+	int SensorGetBS((in-Long) senKey, (out-Double[16]) xaf_senbs)
+Parameters: 
+	senKey: The sensor's unique key
+	xaf_senbs: Sensor's sigma and biases (see XAF_SENBS_?)
+Return Value:
+	0 if all sensor sigma/bias data fields are retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 21. SensorSetBS
+Purpose:
+	 Adds/updates sensor sigma/bias data (non DMA)
+Syntax: 
+	int SensorSetBS((in-Long) senKey, (in-Double[16]) xaf_senbs)
+Parameters: 
+	senKey: The sensor's unique key
+	xaf_senbs: Sensor's sigmas and biases (see XAF_SENBS_?)
+Return Value:
+	0 if the sensor sigma/bias data is added/updated successfully, non-0 if there is an error
+=======================================================================================
+ 22. SensorGetBSField
+Purpose:
+	 Retrieves an individual field of sensor sigma/bias data
+Syntax: 
+	int SensorGetBSField((in-Long) senKey, (in-Integer) xaf_senbs, (out-Character[512]) strValue)
+Parameters: 
+	senKey: The sensor's unique key
+	xaf_senbs: Index number of the field the user wants to retrieve (see XAF_SENBS_?)
+	strValue: A string to contain the value of the requested field
+Return Value:
+	0 if the sensor sigma/bias data is retrieved successfully, non-0 if there is an error
+=======================================================================================
+ 23. SensorSetBSField
+Purpose:
+	 Updates an individual field of sensor sigma/bias data
+Syntax: 
+	int SensorSetBSField((in-Long) senKey, (in-Integer) xaf_senbs, (in-Character[512]) strValue)
+Parameters: 
+	senKey: The sensor's unique key
+	xaf_senbs: Index number of the field the user wants to set (see XAF_SENBS_?)
+	strValue: The new value of the specified field, expressed as a string
+Return Value:
+	Returns zero indicating the sensor sigma/bias data has been successfully updated. Other values indicate an error
+=======================================================================================
+ 24. SensorGetLines
+Purpose:
+	 Retrieves the sensor data in form of S-Card, L1-Card, and L2-Card of the sensor
+Syntax: 
+	int SensorGetLines((in-Long) senKey, (out-Character[512]) sCard, (out-Character[512]) l1Card, (out-Character[512]) l2Card)
+Parameters: 
+	senKey: The sensor's unique key
+	sCard: S-Card string of the sensor
+	l1Card: L1-Card string of the sensor
+	l2Card: L2-Card string of the sensor
+Return Value:
+	0 on success, non-0 if there is an error
+=======================================================================================
+ 25. SensorGetBSLine
+Purpose:
+	 Retrieves the sensor Bias/Sigma card
+Syntax: 
+	int SensorGetBSLine((in-Long) senKey, (out-Character[512]) bsCard)
+Parameters: 
+	senKey: The sensor's unique key
+	bsCard: BS-Card string of the sensor
+Return Value:
+	0 on success, non-0 if there is an error
+=======================================================================================
+ 26. SensorGetOrbSatKey
+Purpose:
+	 Gets sensor's orbiting satellite's satKey
+Syntax: 
+	int SensorGetOrbSatKey((in-Long) senKey, (out-Long) orbSatKey)
+Parameters: 
+	senKey: The sensor's unique key
+	orbSatKey: The orbiting satellite's unique key
+Return Value:
+	0 on success, non-0 if there is an error
+=======================================================================================
+ 27. SensorSetOrbSatKey
+Purpose:
+	 Sets sensor's orbiting satellite's satKey
+Syntax: 
+	int SensorSetOrbSatKey((in-Long) senKey, (in-Long) orbSatKey)
+Parameters: 
+	senKey: The sensor's unique key
+	orbSatKey: The orbiting satellite's unique key
+Return Value:
+	0 on success, non-0 if there is an error
+=======================================================================================
+ 28. SensorLoadAzElTable
+Purpose:
+	 Loads Space Fence's detailed azimuth-elevation definition table
+Syntax: 
+	int SensorLoadAzElTable((in-Long) senKey, (in-Character[512]) azElTableFile)
+Parameters: 
+	senKey: The sensor's unique key
+	azElTableFile: The name of the file containing Space Fence's az/el definition table
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+ 29. SensorAddSegment
+Purpose:
+	 Adds a new sensor segment whose limits defined by the input parameters - a cone or a dome portion 
+Syntax: 
+	int SensorAddSegment((in-Long) senKey, (in-Integer) segType, (in-Double[16]) xa_seg)
+Parameters: 
+	senKey: The sensor's unique key
+	segType: Input segment type (bounded-cone = 1, dome = 2)
+	xa_seg: Sensor segment data (see XA_SEG_DOME_? and see XA_SEG_BCONE_?
+Return Value:
+	0 if the new sensor segment is added successfully, non-0 if there is an error
+=======================================================================================
+ 30. SensorGetSegment
+Purpose:
+	 Retrieves sensor segment data of the specified segment (segNum)
+Syntax: 
+	int SensorGetSegment((in-Long) senKey, (in-Integer) segNum, (out-Integer) segType, (out-Double[16]) xa_seg)
+Parameters: 
+	senKey: The sensor's unique key
+	segNum: The segment number of the sensor segment whose data is returned
+	segType: The output segment type (bounded-cone = 1, dome = 2)
+	xa_seg: The resulting sensor segment data (see XA_SEG_DOME_? and see XA_SEG_BCONE_?)
+Return Value:
+	0 if the sensor segment data is returned successfully, non-0 if there is an error
+=======================================================================================
+ 31. SetSenKeyMode
+Purpose:
+	 Sets sensor key mode
+	 This mode can also be turned on if the user loads an input text file that includes this line - "AS_DMA_SEN_ON" -
+	 and is currently calling any of these methods: DllMainLoadFile(), or SenLoadFile()
+Syntax: 
+	int SetSenKeyMode((in-Integer) sen_keyMode)
+Parameters: 
+	sen_keyMode: Desired sen key mode (see SEN_KEYMODE_?)
+Return Value:
+	0 if the set is successful, non-0 if there is an error.
+=======================================================================================
+ 32. GetSenKeyMode
+Purpose:
+	 Gets current sensor key mode
+Syntax: 
+	int GetSenKeyMode()
+Parameters: 
+	None
+Return Value:
+	Current sen key mode (see SEN_KEYMODE_?)
+=======================================================================================
+ 33. SenNumOf
+Purpose:
+	 Returs the sensor number associated with the input senKey
+Syntax: 
+	int SenNumOf((in-Long) senKey)
+Parameters: 
+	senKey: The input senKey
+Return Value:
+	The sensor number associated with the input senKey (senNum = -1 if senKey doesn't exist)
+=======================================================================================
+ 34. SensorGetSenKey
+Purpose:
+	 Returns the first senKey from the currently loaded set of sensors that contains the specified sensor number.
+	 A negative value will be returned if there is an error.
+Syntax: 
+	__int64 SensorGetSenKey((in-Integer) senNum)
+Parameters: 
+	senNum: Satellite number
+Return Value:
+	The senellite's unique key
+=======================================================================================
+ 35. SensorGetSenKeyML
+Purpose:
+	 This function is similar to SensorGetSenKey but designed to be used in Matlab. 
+	 Matlab doesn't correctly return the 19-digit satellite key using SensorGetSenKey. This method is an alternative way to return the senKey output.
+	 A negative value will be returned in senKey if there is an error.
+Syntax: 
+	void SensorGetSenKeyML((in-Integer) senNum, (out-Long) senKey)
+Parameters: 
+	senNum: Senellite number
+	senKey: The senKey of the sensor if a sensor with the requested number is found in the set of loaded sensor, a negative value if there is an error.
+=======================================================================================
+ 36. SensorAddFrArray
+Purpose:
+	 Adds a sensor (location, limits, sigmas/biases), using its data stored in the input arrays.
+Syntax: 
+	__int64 SensorAddFrArray((in-Double[128]) xa_sen, (in-Character[512]) xs_sen)
+Parameters: 
+	xa_sen: Array containing sensor's numerical fields (see XA_SEN_?)
+	xs_sen: Input string that contains all sensor's text fields (see XS_SEN_?)
+Return Value:
+	The senKey of the newly added sensor on success, a negative value on error.
+=======================================================================================
+ 37. SensorDataToArray
+Purpose:
+	 Retrieves sensor data (location, limits, sigmas/biases) and stores it in the passing arrays.
+Syntax: 
+	int SensorDataToArray((in-Long) senKey, (out-Double[128]) xa_sen, (out-Character[512]) xs_sen)
+Parameters: 
+	senKey: The sensor's unique key
+	xa_sen: Array containing sensor's numerical fields (see XA_SEN_?)
+	xs_sen: Input string that contains all sensor's text fields (see XS_SEN_?)
+Return Value:
+	0 if all values are retrieved successfully, non-0 if there is an error
+=======================================================================================
+
+
+

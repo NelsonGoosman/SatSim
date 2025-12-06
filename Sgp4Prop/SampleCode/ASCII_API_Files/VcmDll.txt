@@ -1,0 +1,486 @@
+  1. VcmInit
+Purpose:
+	 Notes: This function has been deprecated since v9.0. 
+	 Initializes Vcm DLL for use in the program
+	 If this function returns an error, it is recommended that the users stop the program immediately. The error occurs if the users forget to load and initialize all the prerequisite DLLs, as listed in the DLL Prerequisites section, before using this DLL.
+Syntax: 
+	int VcmInit((in-Long) apAddr)
+Parameters: 
+	apAddr: The handle that was returned from DllMainInit()
+Return Value:
+	0 if Vcm.dll is initialized successfully, non-0 if there is an error
+=======================================================================================
+  2. VcmGetInfo
+Purpose:
+	 Returns information about the current version of Vcm DLL. The information is placed in the string parameter you pass in
+	 The returned string provides information about the version number, build date, and the platform of the Vcm DLL. 
+Syntax: 
+	void VcmGetInfo((out-Character[128]) infoStr)
+Parameters: 
+	infoStr: A string to hold the information about Vcm.dll
+=======================================================================================
+  3. VcmLoadFile
+Purpose:
+	 Loads a text file containing Vcm's
+	 The users can use this function repeatedly to load Vcm records from different input files. However, only unique satKeys are stored in the binary tree. Duplicated satKeys won't be stored. 
+	 
+	 State vectors can be included directly in the main input file or they can be read from a separate file identified with "ELTFIL=[pathname\filename]" or "VECFIL=[path/filename]" or "SPVMSG=[path/filename]".
+	 
+	 This function only reads Vcm records from the main input file or Vcm records from the file identified with ELTFIL or VECFIL in the input file. It won't read anything else.
+Syntax: 
+	int VcmLoadFile((in-Character[512]) vcmFile)
+Parameters: 
+	vcmFile: The name of the file containing VCMs to be loaded
+Return Value:
+	0 if the input file is read successfully, non-0 if there is an error
+=======================================================================================
+  4. VcmSaveFile
+Purpose:
+	 Saves the currently loaded VCM's to a file
+	 If the users call this routine immediately after VcmLoadFile. The VCMs contents in the two file should be the same (minus duplicated VCMs or bad VCMs).
+	 
+	 The purpose of this function is to save the current state of the loaded VCMs, usually used in GUI applications, for future use.
+Syntax: 
+	int VcmSaveFile((in-Character[512]) vcmFile, (in-Integer) saveMode, (in-Integer) saveForm)
+Parameters: 
+	vcmFile: The name of the file in which to save the settings
+	saveMode: Specifies whether to create a new file or append to an existing one (0 = create, 1= append)
+	saveForm: Specifies the mode in which to save the file (0 = text format, 1 = not yet implemented, reserved for future)
+Return Value:
+	0 if the data is successfully saved to the file, non-0 if there is an error
+=======================================================================================
+  5. VcmRemoveSat
+Purpose:
+	 Removes a VCM represented by the satKey from memory
+	 If the users enter an invalid satKey - a non-existing satKey in memory, the function will return a non-zero value indicating an error.
+Syntax: 
+	int VcmRemoveSat((in-Long) satKey)
+Parameters: 
+	satKey: The unique key of the satellite to be removed
+Return Value:
+	0 if the VCM is removed successfully, non-0 if there is an error
+=======================================================================================
+  6. VcmRemoveAllSats
+Purpose:
+	 Removes all VCM's from memory
+	 The function returns zero if all the satellites are removed successfully from the Vcm DLL's binary tree.
+Syntax: 
+	int VcmRemoveAllSats()
+Parameters: 
+	None
+Return Value:
+	0 if all VCM's are removed successfully from memory, non-0 if there is an error
+=======================================================================================
+  7. VcmGetCount
+Purpose:
+	 Retrieves all of the currently loaded satKeys. These satKeys can be used to access the internal data for the VCM's
+	 See VcmGetLoaded for an example.
+	 This function is useful for dynamically allocating memory for the array that is passed to the function VcmGetLoaded().
+Syntax: 
+	int VcmGetCount()
+Parameters: 
+	None
+Return Value:
+	The number of VCM's currently loaded
+=======================================================================================
+  8. VcmGetLoaded
+Purpose:
+	 Retrieves all of the currently loaded satKeys. These satKeys can be used to access the internal data for the VCM's
+	 It is recommended that VcmGetCount() is used to count how many satellites are currently loaded in the Vcm DLL's binary tree. The users then use this number to dynamically allocate the satKeys array and pass it to this function. 
+	 
+	 If the users prefer to pass a static array to the function, make sure it is big enough to store all the satKeys in memory.
+Syntax: 
+	void VcmGetLoaded((in-Integer) order, (out-Long[*]) satKeys)
+Parameters: 
+	order: Specifies the order in which the satKeys should be returned: 0=ascending, 1=descending, 2=order as loaded
+	satKeys: The array in which to store the satKeys
+=======================================================================================
+  9. VcmAddSatFrLines
+Purpose:
+	 Adds a VCM using its 1-line or concatenated string formats
+	 If the satellite was previously added to the Vcm DLL's binary tree, the function also returns a negative value indicating an error. 
+	 
+	 The users can use this function repeatedly to add many satellites (one satellite at a time) to the Vcm DLL's binary tree. 
+Syntax: 
+	__int64 VcmAddSatFrLines((in-Character[4000]) vcmString)
+Parameters: 
+	vcmString: 1-line or concatenated string representation of the VCM
+Return Value:
+	The satKey of the newly added VCM on success, a negative value on error
+=======================================================================================
+ 10. VcmAddSatFrLinesML
+Purpose:
+	 Works like VcmAddSatFrLines but designed for Matlab
+Syntax: 
+	void VcmAddSatFrLinesML((in-Character[4000]) vcmString, (out-Long) satKey)
+Parameters: 
+	vcmString: 1-line or concatenated string representation of the VCM
+	satKey: The satKey of the newly added VCM on success, a negative value on error
+=======================================================================================
+ 11. VcmAddSatFrFields
+Purpose:
+	 Adds a VCM using its individually provided field values
+	 
+	 The table below indicates starting character position for each field in the xs_vcm parameter:
+	 
+	 table
+	 
+	 Starting Character Position
+	 Input Description
+	 
+	  0satellite name, A8
+	  8common satellite name, A25
+	 33geopotential name, A6 (WGS-72, WGS-84, EGM-96, ...)
+	 39drag model, A12
+	 51lunar solar pertubations, A3 (ON, OFF)
+	 54radiation pressure pertubations, A3 (ON, OFF)
+	 57Earth + ocean tides pertubation, A3 (ON, OFF)
+	 60intrack thrust, A3 (ON, OFF)
+	 63integration mode, A6 (ASW, OSW, SPADOC, ...)
+	 69coordinate system, A5
+	 74type of partial derivatives, A8
+	 82step mode, A4 (AUTO, TIME, S)
+	 86fixed step size indicator, A3 (ON, OFF)
+	 89initial step size selection, A6 (AUTO, MANUAL)
+	 
+	  
+	 The table below indicates the index for each field in the xa_vcm array:
+	 
+	 table
+	 
+	 Index (xa_vcm)
+	 index Interpretation
+	 
+	   0satellite number
+	   1satellite's epoch time
+	   2epoch revolution number
+	   3J2K position X (km)
+	   4J2K position Y (km)
+	   5J2K position Z (km)
+	   6J2K velocity X (km/s)
+	   7J2K velocity Y (km/s)
+	   8J2K velocity Z (km/s)
+	   9ECI position X (km)
+	  10ECI position Y (km)
+	  11ECI position Z (km)
+	  12ECI velocity X (km/s)
+	  13ECI velocity Y (km/s)
+	  14ECI velocity Z (km/s)
+	  15EFG position X (km)
+	  16EFG position Y (km)
+	  17EFG position Z (km)
+	  18EFG velocity X (km/s)
+	  19EFG velocity Y (km/s)
+	  20EFG velocity Z (km/s)
+	  21geopotential zonals
+	  22geopotential tesserals
+	  23ballistic coefficient (m^2/kg)
+	  24BDOT (m^2/kg-s)
+	  25solar radiation pressure coefficient (m^2/kg)
+	  26energy dissipation rate (w/kg)
+	  27outgassing parameter/thrust acceleration (km/s^2)
+	  28center of mass offset (m)
+	  29solar flux F10
+	  30average F10
+	  31average Ap
+	  32TAI - UTC (s)
+	  33UT1 - UTC (s)
+	  34UT1 rate (ms/day)
+	  35polar motion X (arcsec)
+	  36polar motion Y (arcsec)
+	  37nutation terms
+	  38leap second time in days since 1950 UTC
+	  39initial step size
+	  40integrator control error
+	  41position u sigma (km)
+	  42position v sigma (km)
+	  43position w sigma (km)
+	  44velocity u sigma (km/s)
+	  45velocity v sigma (km/s)
+	  46velocity w sigma (km/s)
+	  47covariance matrix size
+	  48weighted RM of last DC on the satellite
+	 100the lower triangle portion of the full cov matrix (100-120: 6x6 covmtx, ..., 100-144: 9x9
+	 covmtx)
+	 
+	 
+	 The order of the values in the lower half of the covariance matrix is described in the VCM Data Description section.  
+	 
+	 For a 6x6 covariance matrix, the 21 values should be entered in the xa_vcm array using index values 100-120.  
+	 
+	 For a 9x9 covariance matrix, the 45 values should be entered using the index values 100-144.
+Syntax: 
+	__int64 VcmAddSatFrFields((in-Character[512]) xs_vcm, (in-Double[512]) xa_vcm)
+Parameters: 
+	xs_vcm: The input string that contains all VCM's text fields
+	xa_vcm: The input array that contains all VCM's numerical fields (see XA_VCM_?)
+Return Value:
+	The satKey of the newly added VCM on success, a negative value on error
+=======================================================================================
+ 12. VcmAddSatFrFieldsML
+Purpose:
+	 Works like VcmAddSatFrFields but designed for Matlab
+	 
+	 See VcmAddSatFrFields for definitions of the xs_vcm and xa_vcm parameters.
+Syntax: 
+	void VcmAddSatFrFieldsML((in-Character[512]) xs_vcm, (in-Double[512]) xa_vcm, (out-Long) satKey)
+Parameters: 
+	xs_vcm: The input string that contains all VCM's text fields
+	xa_vcm: The input array that contains all VCM's numerical fields (see XA_VCM_?)
+	satKey: The satKey of the newly added VCM on success, a negative value on error
+=======================================================================================
+ 13. VcmRetrieveAllData
+Purpose:
+	 Retrieves VCM data associated with the input satKey
+Syntax: 
+	int VcmRetrieveAllData((in-Long) satKey, (out-Character[512]) xs_vcm, (out-Double[512]) xa_vcm)
+Parameters: 
+	satKey: The satKey of the loaded VCM
+	xs_vcm: The output string that contains all VCM's text fields
+	xa_vcm: The output array that contains all VCM's numerical fields (see XA_VCM_?)
+Return Value:
+	0 if the VCM data is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 14. VcmUpdateSatFrFields
+Purpose:
+	 Updates a VCM using its individual field values. Note: satellite's number and epoch won't be updated
+	 
+	 See VcmAddSatFrFields for definitions of the xs_vcm and xa_vcm parameters.
+Syntax: 
+	int VcmUpdateSatFrFields((in-Long) satKey, (in-Character[512]) xs_vcm, (in-Double[512]) xa_vcm)
+Parameters: 
+	satKey: The unique key of the satellite to update
+	xs_vcm: The input string that contains all VCM's text fields
+	xa_vcm: The input array that contains all VCM's numerical fields (see XA_VCM_?)
+Return Value:
+	0 if the Vcm data is successfully updated, non-0 if there is an error
+=======================================================================================
+ 15. VcmGetField
+Purpose:
+	 Retrieves the value of a specific field of a VCM
+	 
+	 The table below shows the values for the xf_Vcm parameter:
+	 
+	 table
+	 
+	 index
+	 index Interpretation
+	 
+	  1  Satellite number I5
+	  2  Satellite international designator A8
+	  3  Epoch YYYYDDDHHMMSS.SSS A17
+	  4  Revolution number I5
+	  5  position X (km) F16.8 
+	  6  position Y (km) F16.8 
+	  7  position Z (km) F16.8   
+	  8  velocity X (km/s) F16.12
+	  9  velocity Y (km/s) F16.12
+	 10  velocity Z (km/s) F16.12
+	 11  Geo Name A6
+	 12  Geo zonals I2
+	 13  Geo tesserals I2
+	 14  Drag modelel A12 (NONE, JAC70/MSIS90) 
+	 15  Lunar solar A3 (ON/OFF)
+	 16  Radiation pressure pertubations A3 (ON/OFF)
+	 17  Earth + ocean tides pertubations A3 (ON/OFF)
+	 18  Intrack thrust A3 (ON/OFF)
+	 19  Ballistic coefficient (m^2/kg)
+	 20  Radiation pressure coefficient  (m^2/kg)
+	 21  Outgassing parameter (km/s^2)
+	 22  Center of mass offset (m)
+	 23  Solar flux F10 I3
+	 24  Solar flux F10 average I3
+	 25  Ap average F5.1
+	 26  TAI minus UTC (s)I2
+	 27  UT1 minus UTC (s) F7.5
+	 28  UT1 rate (ms/day)  F5.3
+	 29  Polar motion X (arcsec) F6.4
+	 30  Polar motion Y (arcsec) F6.4
+	 31  Nutation terms I3
+	 32  Leap second time YYYYDDDHHMMSS.SSS A17
+	 33  Integration mode A6 (ASW, OSW, SPADOC)
+	 34  Type of partial derivatives A8 (ANALYTIC, FULL NUM, FAST NUM)
+	 35  Integration step mode A4 (AUTO/TIME, S)
+	 36  Fixed step size indicator A3 (ON/OFF)
+	 37  Initial step size selection A6 (AUTO/MANUAL)
+	 38  Initial integration step size F8.3
+	 39  Integrator error control E9.3
+	 40  Weighted RMS of last DC E10.5
+	 41  BDOT (M2/KG-S)
+	 42  EDR (W/KG)
+	 
+Syntax: 
+	int VcmGetField((in-Long) satKey, (in-Integer) xf_Vcm, (out-Character[512]) valueStr)
+Parameters: 
+	satKey: The satellite's unique key
+	xf_Vcm: Predefined number specifying which field to set
+	valueStr: A string to contain the value of the requested field
+Return Value:
+	0 if the VCM is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 16. VcmSetField
+Purpose:
+	 Updates the value of a specific field of a VCM
+	 See VcmGetField for a description of the xf_Vcm parameter.
+Syntax: 
+	int VcmSetField((in-Long) satKey, (in-Integer) xf_Vcm, (in-Character[512]) valueStr)
+Parameters: 
+	satKey: The satellite's unique key
+	xf_Vcm: Predefined number specifying which field to set
+	valueStr: The new value of the specified field, expressed as a string
+Return Value:
+	0 if the VCM is successfully updated, non-0 if there is an error
+=======================================================================================
+ 17. VcmGetAllFields
+Purpose:
+	 Retrieves all of the data for a VCM in a single function call
+Syntax: 
+	int VcmGetAllFields((in-Long) satKey, (out-Integer) satNum, (out-Character[8]) satName, (out-Character[17]) epochDtg, (out-Integer) revNum, (out-Double[3]) posECI, (out-Double[3]) velECI, (out-Character[6]) geoName, (out-Integer) geoZonals, (out-Integer) geoTesserals, (out-Character[12]) dragModel, (out-Character[3]) lunarSolar, (out-Character[3]) radPress, (out-Character[3]) earthTides, (out-Character[3]) intrackThrust, (out-Double) bTerm, (out-Double) agom, (out-Double) ogParm, (out-Double) cmOffset, (out-Integer) f10, (out-Integer) f10Avg, (out-Double) apAvg, (out-Double[5]) tconRec, (out-Integer) nTerms, (out-Character[17]) leapYrDtg, (out-Character[6]) integMode, (out-Character[8]) partials, (out-Character[4]) stepMode, (out-Character[3]) fixStep, (out-Character[6]) stepSelection, (out-Double) initStepSize, (out-Double) errCtrl, (out-Double) rms)
+Parameters: 
+	satKey: The satellite's unique key
+	satNum: Satellite number
+	satName: Satellite name A8
+	epochDtg: Satellite epoch time A17 YYYYDDDHHMMSS.SSS
+	revNum: Revolution number
+	posECI: ECI position
+	velECI: ECI velocity
+	geoName: Geopotential name A6 (WGS-72, WGS-84, EGM-96...)
+	geoZonals: Geopotential zonals
+	geoTesserals: Geopotential tesserals
+	dragModel: Drag model A12 (NONE, JAC70/MSIS90...)
+	lunarSolar: Lunar solar pertubations A3: ON, OFF
+	radPress: Radiation pressure pertubations A3: ON, OFF
+	earthTides: Earth + ocean tides pertubations A3: ON, OFF
+	intrackThrust: Intrack thrust A3: ON, OFF
+	bTerm: Ballistic coefficient (m2/kg) E13.10
+	agom: Solar radiation pressure coefficient (m2/kg) E13.10
+	ogParm: Outgassing parameter/Thrust acceleration (m/s2) E13.10
+	cmOffset: Center of mass offset (m)
+	f10: Solar flux F10 I3
+	f10Avg: Soluar flux F10 average I3
+	apAvg: Ap average F5.1
+	tconRec: 1: TaiMinusUTC, 2: UT1MinusUTC, 3: UT1Rate, 4: PolarX, 5: PolarY
+	nTerms: Number of nutation terms I3
+	leapYrDtg: Leap second time
+	integMode: Integration mode A6: ASW, OSW, SPADOC (SPECTR=1 if ASW, OSW)
+	partials: Type of partial derivatives A8 (Analytic, FULL NUM, FAST NUM)
+	stepMode: Integrator step mode A4: AUTO, TIME, S
+	fixStep: Fixed step size indicator A3: ON, OFF
+	stepSelection: Initial step size selection A6: AUTO, MANUAL
+	initStepSize: Initial integration step size  F8.3
+	errCtrl: Integrator error control  E9.3
+	rms: Weighted RMS of last DC on the satellite E10.5
+Return Value:
+	! 0 if the VCM is successfully retrieved, non-0 if there is an error
+=======================================================================================
+ 18. VcmGetLines
+Purpose:
+	 Returns the concatenated string representation of a VCM by the satellite's satKey
+Syntax: 
+	int VcmGetLines((in-Long) satKey, (out-Character[4000]) vcmLines)
+Parameters: 
+	satKey: The satellite's unique key
+	vcmLines: The resulting concatenated string representation of the VCM
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 19. Vcm1LineToMultiLine
+Purpose:
+	 Converts VCM 1-line format to multi-line format (as a concatenated string)
+Syntax: 
+	int Vcm1LineToMultiLine((in-Character[1500]) vcm1Line, (out-Character[4000]) vcmLines)
+Parameters: 
+	vcm1Line: The input VCM 1-line format
+	vcmLines: The resulting concatenated string
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 20. VcmMultiLineTo1Line
+Purpose:
+	 Converts VCM multi-line format (as a concatenated string) to 1-line format 
+Syntax: 
+	int VcmMultiLineTo1Line((in-Character[4000]) vcmLines, (out-Character[1500]) vcm1Line)
+Parameters: 
+	vcmLines: The input concatenated string
+	vcm1Line: The resulting VCM 1-line format
+Return Value:
+	0 if successful, non-0 on error
+=======================================================================================
+ 21. VcmGetSatKey
+Purpose:
+	 Returns the first satKey from the currently loaded set of VCM's that contains the specified satellite number
+	 This function is useful when Vcm dll is used in applications that requires only one record (one Vcm entry) for one satellite and the applications refer to that Vcm by its satellite number. However, the Standardized Astrodynamic Algorithms library is only working with satKeys, this function helps to return the associated satKey of that satellite.
+Syntax: 
+	__int64 VcmGetSatKey((in-Integer) satNum)
+Parameters: 
+	satNum: The input satellite number
+Return Value:
+	The satellite's unique key
+=======================================================================================
+ 22. VcmGetSatKeyML
+Purpose:
+	 Works like VcmGetSatKey but designed for Matlab
+Syntax: 
+	void VcmGetSatKeyML((in-Integer) satNum, (out-Long) satKey)
+Parameters: 
+	satNum: The input satellite number
+	satKey: The satellite's unique key
+=======================================================================================
+ 23. VcmFieldsToSatKey
+Purpose:
+	 Computes a satKey from the input data
+	 This is the proper way to reconstruct a satKey from its fields. If the users use their own routine to do this, the computed satKey might be different. 
+Syntax: 
+	__int64 VcmFieldsToSatKey((in-Integer) satNum, (in-Character[20]) epochDtg)
+Parameters: 
+	satNum: The input satellite number
+	epochDtg: [yy]yydddhhmmss.sss or [yy]yyddd.ddddddd or DTG15, DTG17, DTG20
+Return Value:
+	The satellite's unique key
+=======================================================================================
+ 24. VcmFieldsToSatKeyML
+Purpose:
+	 Works like VcmFieldsToSatKey but designed for Matlab
+Syntax: 
+	void VcmFieldsToSatKeyML((in-Integer) satNum, (in-Character[20]) epochDtg, (out-Long) satKey)
+Parameters: 
+	satNum: The input satellite number
+	epochDtg: [yy]yydddhhmmss.sss or [yy]yyddd.ddddddd or DTG15, DTG17, DTG20
+	satKey: The satellite's unique key
+=======================================================================================
+ 25. VcmArrayToVcmLines
+Purpose:
+	 Constructs a multi-line VCM (as a concatenated string) from the VCM data stored in the input arrays.
+Syntax: 
+	void VcmArrayToVcmLines((in-Double[512]) xa_vcm, (in-Character[512]) xs_vcm, (out-Character[4000]) vcmLines)
+Parameters: 
+	xa_vcm: Array containing VCM's numerical fields (see XA_VCM_?)
+	xs_vcm: Input string that contains all VCM's text fields (see XS_VCM_?)
+	vcmLines: The resulting concatenated string representation of a VCM
+=======================================================================================
+ 26. VcmArrayToVcm1Line
+Purpose:
+	 Constructs a 1-line VCM from the VCM data stored in the input arrays.
+Syntax: 
+	void VcmArrayToVcm1Line((in-Double[512]) xa_vcm, (in-Character[512]) xs_vcm, (out-Character[1500]) vcm1Line)
+Parameters: 
+	xa_vcm: Array containing VCM's numerical fields (see XA_VCM_?)
+	xs_vcm: Input string that contains all VCM's text fields (see XS_VCM_?)
+	vcm1Line: The resulting 1-line VCM
+=======================================================================================
+ 27. VcmStringToArray
+Purpose:
+	 Parses data either in 1-line or multi-line (as a concatenated string) VCM and stores that data into the output arrays
+	 This function only parses data from the input VCM but DOES NOT load/add the input VCM to memory.
+Syntax: 
+	int VcmStringToArray((in-Character[4000]) vcmString, (out-Double[512]) xa_vcm, (out-Character[512]) xs_vcm)
+Parameters: 
+	vcmString: An input 1-line or concatenated string representation of the VCM
+	xa_vcm: Array containing VCM's numerical fields (see XA_VCM_?)
+	xs_vcm: Output string that contains all VCM's text fields (see XS_VCM_?)
+Return Value:
+	0 if the VCM is parsed successfully, non-0 if there is an error.
+=======================================================================================
+
+
+
