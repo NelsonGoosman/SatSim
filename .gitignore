@@ -9,3 +9,12 @@ Sgp4Prop/directorytree.txt
 Sgp4Prop/directory.txt
 Sgp4Prop/Utilities
 Sgp4Prop/README.txt
+
+Sgp4Prop/SampleCode/ASCII_API_Files
+Sgp4Prop/SampleCode/C/driverexamples_c.sln
+Sgp4Prop/SampleCode/C/DriverExamples/OscVecToTLE
+Sgp4Prop/SampleCode/C/DriverExamples/Sgp4Prop
+Sgp4Prop/SampleCode/C/DriverExamples/Sgp4Prop_Simple
+Sgp4Prop/SampleCode/C/DriverExamples/ShowVersion
+Sgp4Prop/SampleCode/C/DriverExamples/TestInterfaces
+Sgp4Prop/SampleCode/C/DriverExamples/TleReepoch
