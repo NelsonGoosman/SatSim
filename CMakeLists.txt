@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(SatSim)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DCURL_STATICLIB)
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -46,6 +46,8 @@ target_link_libraries(app
         bcrypt.lib
         iphlpapi.lib
 )
+
+set_target_properties(app PROPERTIES LINK_FLAGS "/NODEFAULTLIB:MSVCRT")
 
 link_directories(
     ${CMAKE_SOURCE_DIR}/Sgp4Prop/Lib/Windows

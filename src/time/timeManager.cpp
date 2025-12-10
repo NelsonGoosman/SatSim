@@ -1,9 +1,21 @@
-#include "timeManager.h"
+
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
+
 #include "../../Sgp4Prop/SampleCode/C/DriverExamples/wrappers/TimeFuncDll.h"
+
+#ifdef __cplusplus
+}
+#endif
+
+#include "timeManager.h"
+
 #include <chrono>
 #include <ctime>
 
-double TimeManager::getCurrentTimeDS50(){
+double TimeManager::calculateCurrentTimeDS50(){
     using namespace std::chrono;
 
     // Get current time
@@ -28,14 +40,14 @@ double TimeManager::getCurrentTimeDS50(){
 TimeManager::TimeManager()
     : timeScale(1.0f), currentTimeDS50(0.0), simulationTimeDS50(0.0), callback(nullptr), simulationStep(10000) {
     // Initialize current time
-    currentTimeDS50.store(getCurrentTimeDS50());
+    currentTimeDS50.store(calculateCurrentTimeDS50());
     simulationTimeDS50.store(currentTimeDS50.load());
 }
  
 
 void TimeManager::update() {
     // Update current time
-    currentTimeDS50.store(getCurrentTimeDS50());
+    currentTimeDS50.store(calculateCurrentTimeDS50());
 
     // Update simulation time based on time scale
     simulationTimeDS50.store(simulationTimeDS50.load() + timeScale.load() * (currentTimeDS50.load() - simulationTimeDS50.load()));

@@ -73,6 +73,7 @@ protected:
 
     CURL* curl; 
 
+
 private:
     static bool curl_init;
 

@@ -60,8 +60,11 @@ void worker(std::vector<Entity>& in, size_t start, size_t end){
         );
 
         in[i].id = simNumber;
-
-        if (simNumber > 0 && Sgp4InitSat(simNumber) != 0) {
+        int ret = Sgp4InitSat(simNumber);
+        if (simNumber > 0 && ret != 0) {
+            char errMsg[128];
+            GetLastErrMsg(errMsg);
+            std::cerr << "Error initializing SGP4 for satellite " << name << ": " << errMsg << std::endl;
             throw std::runtime_error("SGP4 Initialization failed for satellite: " + name);
         }
     }
@@ -69,23 +72,25 @@ void worker(std::vector<Entity>& in, size_t start, size_t end){
 
 
 void init_sgp4(std::vector<Entity>& source){
-    size_t len = source.size();
-    unsigned int threads = std::thread::hardware_concurrency();
-    std::vector<std::thread> pool;
+    // size_t len = source.size();
+    // unsigned int threads = std::thread::hardware_concurrency();
+    // std::vector<std::thread> pool;
 
-    size_t block = len / threads;
+    // size_t block = len / threads;
 
-    for (unsigned int t = 0; t < threads; t++) {
-        size_t start = t * block;
-        size_t end   = (t == threads - 1) ? len : start + block;
+    // for (unsigned int t = 0; t < threads; t++) {
+    //     size_t start = t * block;
+    //     size_t end   = (t == threads - 1) ? len : start + block;
 
-        pool.emplace_back(worker, std::ref(source), start, end);
-    }
+    //     pool.emplace_back(worker, std::ref(source), start, end);
+    // }
 
-    for (auto& t : pool) {
-        if (t.joinable()) {
-            t.join();
-        }
-    }
+    // for (auto& t : pool) {
+    //     if (t.joinable()) {
+    //         t.join();
+    //     }
+    // }
+
+    worker(source, 0, source.size());
     
 }

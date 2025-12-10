@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include "rapidjson/document.h"
 #include "tle.h"
 
@@ -46,6 +47,25 @@ size_t AbstractDataLoader::writeCallback(void* contents, size_t size, size_t nme
 }
 
 std::vector<Entity> AbstractDataLoader::tle_parse(const std::string& request_data){
+
+    auto get_double = [](const rapidjson::Value& val) -> double {
+        if (val.IsString()) {
+            return std::stod(val.GetString());
+        } else if (val.IsNumber()) {
+            return val.GetDouble();
+        }
+        return 0.0;
+    };
+
+    auto get_int = [](const rapidjson::Value& val) -> int {
+        if (val.IsString()) {
+            return std::stoi(val.GetString());
+        } else if (val.IsNumber()) {
+            return val.GetInt();
+        }
+        return 0;
+    };
+
     rapidjson::Document doc;
     doc.Parse(request_data.c_str());
 
@@ -63,22 +83,22 @@ std::vector<Entity> AbstractDataLoader::tle_parse(const std::string& request_dat
         tle.OBJECT_ID           = obj["OBJECT_ID"].GetString();
         tle.EPOCH               = obj["EPOCH"].GetString();
 
-        tle.MEAN_MOTION         = obj["MEAN_MOTION"].GetDouble();
-        tle.ECCENTRICITY        = obj["ECCENTRICITY"].GetDouble();
-        tle.INCLINATION         = obj["INCLINATION"].GetDouble();
-        tle.RA_OF_ASC_NODE      = obj["RA_OF_ASC_NODE"].GetDouble();
-        tle.ARG_OF_PERICENTER   = obj["ARG_OF_PERICENTER"].GetDouble();
-        tle.MEAN_ANOMALY        = obj["MEAN_ANOMALY"].GetDouble();
+        tle.MEAN_MOTION         = get_double(obj["MEAN_MOTION"]);
+        tle.ECCENTRICITY        = get_double(obj["ECCENTRICITY"]);
+        tle.INCLINATION         = get_double(obj["INCLINATION"]);
+        tle.RA_OF_ASC_NODE      = get_double(obj["RA_OF_ASC_NODE"]);
+        tle.ARG_OF_PERICENTER   = get_double(obj["ARG_OF_PERICENTER"]);
+        tle.MEAN_ANOMALY        = get_double(obj["MEAN_ANOMALY"]);
 
-        tle.EPHEMERIS_TYPE      = obj["EPHEMERIS_TYPE"].GetInt();
+        tle.EPHEMERIS_TYPE      = get_int(obj["EPHEMERIS_TYPE"]);
         tle.CLASSIFICATION_TYPE = obj["CLASSIFICATION_TYPE"].GetString();
-        tle.NORAD_CAT_ID        = obj["NORAD_CAT_ID"].GetInt();
-        tle.ELEMENT_SET_NO      = obj["ELEMENT_SET_NO"].GetInt();
-        tle.REV_AT_EPOCH        = obj["REV_AT_EPOCH"].GetInt();
+        tle.NORAD_CAT_ID        = get_int(obj["NORAD_CAT_ID"]);
+        tle.ELEMENT_SET_NO      = get_int(obj["ELEMENT_SET_NO"]);
+        tle.REV_AT_EPOCH        = get_int(obj["REV_AT_EPOCH"]);
 
-        tle.BSTAR               = obj["BSTAR"].GetDouble();
-        tle.MEAN_MOTION_DOT     = obj["MEAN_MOTION_DOT"].GetDouble();
-        tle.MEAN_MOTION_DDOT    = obj["MEAN_MOTION_DDOT"].GetDouble();
+        tle.BSTAR               = get_double(obj["BSTAR"]);
+        tle.MEAN_MOTION_DOT     = get_double(obj["MEAN_MOTION_DOT"]);
+        tle.MEAN_MOTION_DDOT    = get_double(obj["MEAN_MOTION_DDOT"]);
 
        
         e.tle = tle;
@@ -145,6 +165,12 @@ SPACE TRACK DATA LOADER DEFINITIONS
 */
 
 void SpaceTrackDataLoader::login(){
+    std::ifstream ifile(this->params.cookieFile);
+    if (!ifile) {
+        std::ofstream file(this->params.cookieFile);
+        file.close();
+    }
+
     std::string postFields = "identity=" + this->params.username + "&password=" + this->params.password;
     std::string response;
     curl_easy_reset(curl);
@@ -200,7 +226,8 @@ std::string SpaceTrackDataLoader::url_builder() {
 std::vector<Entity> SpaceTrackDataLoader::fetch_data(){
     login();
     std::string request_url = url_builder();
-    std::string response = http_get(request_url);
+    std::string dummy = "https://www.space-track.org/basicspacedata/query/class/gp/orderby/TLE_LINE1%20asc/limit/10/emptyresult/show";
+    std::string response = http_get(dummy);
     return tle_parse(response);
 }
 

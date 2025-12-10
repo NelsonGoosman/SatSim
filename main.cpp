@@ -14,6 +14,13 @@ int main() {
     DataLoader::CelesTrackRequest requestparams = {"CATNR", "25544", "json", SatelliteClassification::UNKNOWN};
     DataLoader::CelesTrackDataLoader loader(requestparams);
     auto result = loader.fetch_data(); 
+
+    std::cout << "***********************************************************" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Fetched " << result.size() << " satellites." <<  std::endl;
+    std::cout << std::endl;
+    std::cout << "***********************************************************" << std::endl;
+
     init_sgp4(result);
 
     TimeManager& timeManager = TimeManager::getInstance();
@@ -22,11 +29,23 @@ int main() {
     };
     timeManager.runSimulation(cb);
 
+    int count = 0;
+    int loopLimit = 6;
     while (timeManager.isRunning()) {
         if (timeManager.getPropagationStatus() == TaskStatus::COMPLETED) {
             timeManager.setRenderingStatus(TaskStatus::IN_PROGRESS);
-            std::cout << "Doing Stuff" << std::endl;
+            std::cout << "***********************************************************" << std::endl;
+            std::cout << "Simulation Time DS50: " << timeManager.getSimulationTimeDS50() << std::endl;
+            std::cout << "Current Time DS50: " << timeManager.getCurrentTimeDS50() << std::endl;
+            std::cout << "Satelite Location: X: " << result[0].current_state.x 
+                      << " Y: " << result[0].current_state.y 
+                      << " Z: " << result[0].current_state.z << std::endl;
+            std::cout << "***********************************************************" << std::endl; 
             timeManager.setRenderingStatus(TaskStatus::COMPLETED);
+        }
+        count++;
+        if (count >= loopLimit) {
+            timeManager.stop();
         }
     }
 
