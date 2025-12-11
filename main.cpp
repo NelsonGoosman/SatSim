@@ -4,7 +4,6 @@
 #include "src/time/timeManager.h"
 #include <iostream>
 #include "src/physics/propagate.h"
-
 void init_app();
 void cleanup();
 int main() {
@@ -12,7 +11,7 @@ int main() {
     init_app();
 
     DataLoader::CelesTrackRequest requestparams = {"CATNR", "25544", "json", SatelliteClassification::UNKNOWN};
-    DataLoader::CelesTrackDataLoader loader(requestparams);
+    DataLoader::CelesTrackDataLoader loader(requestparams, true, true);
     auto result = loader.fetch_data(); 
 
     std::cout << "***********************************************************" << std::endl;
@@ -24,32 +23,32 @@ int main() {
     init_sgp4(result);
 
     TimeManager& timeManager = TimeManager::getInstance();
-    auto cb = [&result](double time){
+    timeManager.setTimeScale(2.0f); 
+    timeManager.setSimulationStep(2500);
+
+    auto propagateCB = [&result](double time){
        batch_propagate_sgp4(result, time);
     };
-    timeManager.runSimulation(cb);
 
-    int count = 0;
-    int loopLimit = 6;
+    auto renderCB = [&result](){
+        for (auto& sat : result) {
+            // For debugging, print the position of the first satellite
+            std::cout << "Satellite " << sat.name << " Position (km): "
+                      << "X: " << sat.current_state[0] << ", "
+                      << "Y: " << sat.current_state[1] << ", "
+                      << "Z: " << sat.current_state[2] << std::endl;
+            break; 
+        }
+    };
+
+    timeManager.runSimulation(propagateCB, renderCB);
+
     while (timeManager.isRunning()) {
-        if (timeManager.getPropagationStatus() == TaskStatus::COMPLETED) {
-            timeManager.setRenderingStatus(TaskStatus::IN_PROGRESS);
-            std::cout << "***********************************************************" << std::endl;
-            std::cout << "Simulation Time DS50: " << timeManager.getSimulationTimeDS50() << std::endl;
-            std::cout << "Current Time DS50: " << timeManager.getCurrentTimeDS50() << std::endl;
-            std::cout << "Satelite Location: X: " << result[0].current_state.x 
-                      << " Y: " << result[0].current_state.y 
-                      << " Z: " << result[0].current_state.z << std::endl;
-            std::cout << "***********************************************************" << std::endl; 
-            timeManager.setRenderingStatus(TaskStatus::COMPLETED);
-        }
-        count++;
-        if (count >= loopLimit) {
-            timeManager.stop();
-        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-
+   
     cleanup();
+
     return 0;
 }
 

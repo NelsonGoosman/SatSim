@@ -10,11 +10,6 @@ enum class SatelliteClassification {
    UNKNOWN
 };
 
-struct StateVector {
-    double x = 0.0;
-    double y = 0.0;
-    double z = 0.0;
-};
 
 // The main struct representing a single satellite object in the simulation.
 struct Entity {
@@ -29,7 +24,7 @@ struct Entity {
     TleData tle;                             // The constant orbital elements
     
     // Current State 
-    StateVector current_state;               // Current position and velocity (ECI)
+    double current_state[3];               // Current position and velocity (ECI)
     double last_propagation_time = 0.0;      // Simulation time of the last update
 };
 

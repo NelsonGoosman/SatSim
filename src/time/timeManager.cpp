@@ -38,52 +38,59 @@ double TimeManager::calculateCurrentTimeDS50(){
 
 
 TimeManager::TimeManager()
-    : timeScale(1.0f), currentTimeDS50(0.0), simulationTimeDS50(0.0), callback(nullptr), simulationStep(10000) {
+    : propagateCallback(nullptr), renderCallback(nullptr) {
     // Initialize current time
-    currentTimeDS50.store(calculateCurrentTimeDS50());
+    currentTimeDS50 = calculateCurrentTimeDS50();
     simulationTimeDS50.store(currentTimeDS50.load());
+}
+
+TimeManager::~TimeManager() {
+    stop();
 }
  
 
 void TimeManager::update() {
     // Update current time
     currentTimeDS50.store(calculateCurrentTimeDS50());
-
+    static double offset = 0.0;
     // Update simulation time based on time scale
-    simulationTimeDS50.store(simulationTimeDS50.load() + timeScale.load() * (currentTimeDS50.load() - simulationTimeDS50.load()));
-
-    if (getRenderingStatus() == TaskStatus::IN_PROGRESS) {
-        // skip propagation until rendering is complete
-       return;
-    } 
+    // sanity check, fix later
+    simulationTimeDS50.store(offset + currentTimeDS50.load());
+    offset++;
     // Call the registered callback if it exists
-    if (callback) {
-        setPropagationStatus(TaskStatus::IN_PROGRESS);
-        callback(simulationTimeDS50.load());
-        setPropagationStatus(TaskStatus::COMPLETED);
+    if (propagateCallback && renderCallback) {
+        propagateCallback(simulationTimeDS50.load());
+        renderCallback();
     }else{
         throw std::runtime_error("No callback function registered for simulation update.");
     }
 }
 
-void TimeManager::runSimulation(std::function<void(double)> func) {
+void TimeManager::runSimulation(std::function<void(double)> propagateFunc, std::function<void()> renderFunc) {
+
     using Clock = std::chrono::steady_clock;
     using TimePoint = std::chrono::time_point<Clock>;
 
     running.store(true);
-    callback = func;
+    propagateCallback = propagateFunc;
+    renderCallback = renderFunc;
+
     simulationThread = std::thread([this]() {
         TimePoint startTime = Clock::now();
-        while (running.load()) {
+        int iterationCount = 0;
+
+        while (running.load() && iterationCount < 4) {
             TimePoint currentTime = Clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
 
             if (elapsed >= simulationStep.load()) {
                 this->update();
-                startTime += std::chrono::milliseconds(simulationStep.load()); // Reset start time after update
+                iterationCount++;
+                startTime = Clock::now(); // reset startTime for next step
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // Sleep briefly to prevent busy-waiting
+            std::this_thread::sleep_for(std::chrono::milliseconds(16)); 
         }
+        running.store(false);
     });
-    
 }
+

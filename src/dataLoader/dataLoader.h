@@ -9,6 +9,7 @@ data loader classes using libcurl
 #include <curl/curl.h>
 #include <iostream>
 #include "entity.h"
+#include <optional>
 
 namespace DataLoader{
 
@@ -24,12 +25,6 @@ struct CelesTrackRequest{
     std::string format;
     SatelliteClassification _class;
 
-    void print() const {
-        std::cout << "Query: " << query << std::endl;
-        std::cout << "Query Value: " << query_value << std::endl;
-        std::cout << "Format: " << format << std::endl;
-        std::cout << "Class: " << static_cast<int>(_class) << std::endl;
-    }
 };
 
 struct SpaceTrackRequest{
@@ -47,15 +42,6 @@ struct SpaceTrackRequest{
     std::string format;
     SatelliteClassification _class;
 
-    void print() const {
-        std::cout << "Username: " << username << std::endl;
-        std::cout << "Password: " << password << std::endl;
-        std::cout << "Cookie File: " << cookieFile << std::endl;
-        std::cout << "Request Controller: " << request_controller << std::endl;
-        std::cout << "Request Class: " << request_class << std::endl;
-        std::cout << "Format: " << format << std::endl;
-        std::cout << "Class: " << static_cast<int>(_class) << std::endl;
-    }
 };
 
 class AbstractDataLoader {
@@ -64,18 +50,24 @@ public:
     virtual std::vector<Entity> fetch_data() = 0; 
     
 protected:
-    AbstractDataLoader();
+    AbstractDataLoader(bool cache_request, bool use_cached);
     virtual std::string http_get(const std::string& url) = 0;
     virtual std::string url_builder() = 0;
     virtual const SatelliteClassification get_class() = 0;
     std::vector<Entity> tle_parse(const std::string& request_data);
     static size_t writeCallback(void* contents, size_t size, size_t nmemb, void* userp);
+    void cache_request(const std::string& url, const std::string& data);
+    std::optional<std::string> use_cached_request(const std::string& url);
 
     CURL* curl; 
-
+    bool cache_request_enabled;
+    bool use_cached_enabled;
 
 private:
+
+    std::string hash_url(const std::string& input);
     static bool curl_init;
+   
 
 };
 
@@ -88,7 +80,7 @@ public:
      * @brief Constructor
      * @param _params The paramaters required for building up the url, specifying what data to retrieve
      */
-    CelesTrackDataLoader(CelesTrackRequest& _params) : params(_params) {}
+    CelesTrackDataLoader(CelesTrackRequest& _params, bool cache_request=false, bool use_cached=false) : AbstractDataLoader(cache_request, use_cached), params(_params) {}
     /**
      * @brief Fetches the CelesTrack data specified by the _params paramater in the constructor
      * @returns A vector of entity structs representing a satelite
@@ -121,7 +113,7 @@ public:
      * @brief Constructor
      * @param _params The paramaters required for building up the url, specifying what data to retrieve
      */
-    SpaceTrackDataLoader(SpaceTrackRequest& _params) : params(_params) {}
+    SpaceTrackDataLoader(SpaceTrackRequest& _params, bool cache_request=false, bool use_cached=false) : AbstractDataLoader(cache_request, use_cached), params(_params) {}
      /**
      * @brief Fetches the SpaceTrack data specified by the _params paramater in the constructor
      * @returns A vector of entity structs representing a satelite
@@ -140,7 +132,13 @@ protected:
      * @returns Correct URL to send to the celestrack server
      */
     std::string url_builder() override;
+
+    /**
+     * @brief Get the class type from the paramaters provided when constructing class
+     * @returns SatelliteClassification class type
+     */
     const SatelliteClassification get_class() override {return params._class; }
+
 
 
 private:

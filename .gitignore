@@ -1,6 +1,9 @@
 .vscode
 
 build/
+cached_requests/*
+!cached_requests/.gitkeep
+cookies.txt
 
 Sgp4Prop/Documentation/
 Sgp4Prop/UnitTests/

@@ -2,6 +2,8 @@
 #include <functional>
 #include <thread>
 #include <atomic>
+#include <mutex>
+
 /*
 TimeManager is a singleton class that manages simulation time and real-world time. It provides methods to get the current time in DS50 format,
 update simulation time based on a time.
@@ -18,6 +20,7 @@ enum class TaskStatus {
 class TimeManager {
     private:
         TimeManager();
+        ~TimeManager();
         TimeManager(const TimeManager&) = delete;
         TimeManager& operator=(const TimeManager&) = delete;
 
@@ -31,21 +34,16 @@ class TimeManager {
         * @brief Run one iteration of the simulation
         */
         void update();
-
-        std::atomic<double> currentTimeDS50;
-        std::atomic<double> simulationTimeDS50;
-        std::atomic<float> timeScale;
-        std::atomic<int> simulationStep;
-        
-        std::function<void(double)> callback; // Callback usually set once before running, or needs mutex protection if changed dynamically
+        std::atomic<float> timeScale{1.0f};
+        std::atomic<double> currentTimeDS50{0.0};
+        std::atomic<double> simulationTimeDS50{0.0};
+        std::atomic<long long> simulationStep{10000}; // in milliseconds
         std::thread simulationThread;
-
-        std::atomic<bool> running{false}; // flag indicating if the simulation loop is running
-        std::atomic<bool> propagationComplete{false}; // flag indicating if the propagation step is complete (starts false -> satelites are updated -> true)
-        std::atomic<bool> renderingComplete{true}; // flag indicating if the rendering step is complete (starts true -> frame is rendered -> false)
-        /*
-        Control flow: Propagate satellites -> set propagationComplete = true -> main loop sees flag, renders frame -> set renderingComplete = true -> time manager sees flag, continues propagation
-        */
+        
+        std::function<void(double)> propagateCallback;
+        std::function<void()> renderCallback;
+        std::atomic<bool> running{false};
+        
     public:
         static TimeManager& getInstance() {
             static TimeManager instance;
@@ -83,43 +81,25 @@ class TimeManager {
         /** 
          * @brief Register a callback function to be called on time updates, and begin simulation loop
          */
-        void runSimulation(std::function<void(double)> func);
+        void runSimulation(std::function<void(double)> propagateFunc, std::function<void()> renderFunc);
+
 
         // Stop the simulation loop, do nothing for now
         void stop() {
-            running.store(false);
             if (simulationThread.joinable()) {
                 simulationThread.join();
             }
+            running.store(false);
         }
 
-        TaskStatus getPropagationStatus() {
-            return propagationComplete.load() ? TaskStatus::COMPLETED : TaskStatus::IN_PROGRESS;
-        }
-
-        TaskStatus getRenderingStatus() {
-            return renderingComplete.load() ? TaskStatus::COMPLETED : TaskStatus::IN_PROGRESS;
-        }
-
-        void setRenderingStatus(TaskStatus status) {
-            if (status == TaskStatus::COMPLETED) {
-                renderingComplete.store(true);
-            } else {
-                renderingComplete.store(false);
-            }
-        }
-
-        void setPropagationStatus(TaskStatus status) {
-            if (status == TaskStatus::COMPLETED) {
-                propagationComplete.store(true);
-            } else {
-                propagationComplete.store(false);
-            }
-        }
 
         bool isRunning() {
             return running.load();
         }   
+
+        void setSimulationStep(int milliseconds) {
+            simulationStep.store(milliseconds);
+        }
         
 };
 
